@@ -2,6 +2,8 @@
 
 > Revolutionizing Egyptian agriculture through AI-powered solutions 🚀
 
+**[Try our platform ➡️ agriai-nu.vercel.app](https://agriai-nu.vercel.app/)**
+
 ## 🎯 Overview
 Transform farming with our comprehensive platform offering:
 - 🤖 AI-powered plant disease detection
@@ -67,4 +69,6 @@ Leading Egypt's agricultural revolution through:
 ---
 <div align="center">
 Made with 💚 for Egyptian Agriculture
+
+[Visit AgriAI](https://agriai-nu.vercel.app/)
 </div>
