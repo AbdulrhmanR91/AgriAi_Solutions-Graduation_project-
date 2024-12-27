@@ -1,36 +1,31 @@
-import { Card, CardHeader, CardContent } from "../ui/card";
-import { Link } from "react-router-dom";
-import searchIcon from "../../../assets/images/search.png";
-import bellIcon from "../../../assets/images/bell.png";
-import tomatoImage from "../../../assets/images/Tomato.jpg";
-import EngineerIcon from "../../../assets/images/engineering.png";
+import { Card, CardHeader, CardContent } from '../ui/card';
+import { Link } from 'react-router-dom';
+import searchIcon from '../../../assets/images/search.png';
+import bellIcon from '../../../assets/images/bell.png';
+import tomatoImage from '../../../assets/images/Tomato.jpg';
+import EngineerIcon from '../../../assets/images/engineering.png';
 
 const PlantTrackingPageE = () => {
+  
   // Create an array of placeholder images for the gallery
   const plantPhotos = Array(4).fill(tomatoImage);
 
   return (
-    <div className="min-h-screen bg-green-50 p-4 pb-40">
-      {/* Top Navigation Bar */}
+<div className="min-h-screen bg-green-50 p-4 pb-40">
+{/* Top Navigation Bar */}
       <div className="flex items-center justify-between mb-6">
         <button className="flex items-center space-x-3">
           <Link to="/expert/profile">
             <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden">
-              <img
-                src={EngineerIcon}
-                alt="User Icon"
-                className="w-full h-full object-cover"
-              />
+              <img src={EngineerIcon} alt="User Icon" className="w-full h-full object-cover" />
             </div>
           </Link>
-          <span className="text-xl text-green-600 font-bold">
-            Welcome, Eng.Mohamed
-          </span>
-        </button>
-
-        <div className="relative w-full max-w-xl">
-          <input
-            type="text"
+          <span className="text-xl text-green-600 font-bold">Welcome, Eng.Mohamed</span>
+        </button>  
+        
+        <div className="relative w-full max-w-xl">       
+          <input 
+            type="text" 
             placeholder="Search Plants"
             className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
           />
@@ -42,16 +37,10 @@ const PlantTrackingPageE = () => {
         <button className="relative">
           <Link to="/expert/notifications">
             <div className="w-8 h-8 rounded-full">
-              <img
-                src={bellIcon}
-                alt="Notification Icon"
-                className="w-full h-full object-cover"
-              />
+              <img src={bellIcon} alt="Notification Icon" className="w-full h-full object-cover" />
             </div>
           </Link>
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
-            3
-          </span>
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">3</span>
         </button>
       </div>
 
@@ -60,7 +49,7 @@ const PlantTrackingPageE = () => {
         <CardHeader className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-lg overflow-hidden">
-              <img
+              <img 
                 src={tomatoImage}
                 alt="Tomato Plant"
                 className="w-full h-full object-cover"
@@ -102,19 +91,14 @@ const PlantTrackingPageE = () => {
               </div>
             </div>
           </div>
-
+          
           {/* Plant Gallery */}
           <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">
-              Recent Photos
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Recent Photos</h3>
             <div className="grid grid-cols-4 gap-2">
               {plantPhotos.map((photo, index) => (
-                <div
-                  key={index}
-                  className="aspect-square rounded-lg overflow-hidden"
-                >
-                  <img
+                <div key={index} className="aspect-square rounded-lg overflow-hidden">
+                  <img 
                     src={photo}
                     alt={`Plant photo ${index + 1}`}
                     className="w-full h-full object-cover"
@@ -165,6 +149,9 @@ const PlantTrackingPageE = () => {
           </ol>
         </CardContent>
       </Card>
+
+     
+       
     </div>
   );
 };

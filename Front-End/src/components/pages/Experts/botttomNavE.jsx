@@ -1,64 +1,70 @@
-import PropTypes from "prop-types";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import PropTypes from 'prop-types';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import engineer from '/src/assets/images/engineering.png';
+import disease from '/src/assets/images/disease.png';
+import home from '/src/assets/images/home.png';
+import box from '/src/assets/images/box.png';
+import job from '/src/assets/images/company.png';
+
 
 const BottomNavigationE = ({ onTabChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("");
+  const [activeTab, setActiveTab] = useState('');
 
-  // Update active tab based on current route
+  // Update active tab based on current route  
   useEffect(() => {
     const path = location.pathname;
     switch (path) {
-      case "/expert/profile":
-        setActiveTab("profile");
+      case '/expert/profile':
+        setActiveTab('profile');
         break;
-      case "/expert/trackplants":
-        setActiveTab("trackplants");
+      case '/expert/trackplants':
+        setActiveTab('trackplants');
         break;
-      case "/expert":
-        setActiveTab("home");
+      case '/expert':
+        setActiveTab('home');
         break;
 
-      case "/expert/orders":
-        setActiveTab("orders");
+      case '/expert/orders':
+        setActiveTab('orders');
         break;
-      case "/expert/jobs":
-        setActiveTab("jobs");
-        break;
+        case '/expert/jobs':
+            setActiveTab('jobs');
+            break;
       default:
-        setActiveTab("");
+        setActiveTab('');
         break;
     }
   }, [location]);
 
   // Function to handle both tab change and navigation
   const handleTabChange = (tab) => {
-    if (tab === "notification") {
-      setActiveTab(""); // No active tab for notification
+    if (tab === 'notification') {
+      setActiveTab(''); // No active tab for notification
     } else {
       setActiveTab(tab); // Update active tab state
     }
     onTabChange?.(tab); // Notify parent component of tab change if handler exists
-
+    
     // Perform navigation with correct paths
     switch (tab) {
-      case "profile":
-        navigate("/expert/profile");
+      case 'profile':
+        navigate('/expert/profile');
         break;
-      case "trackplants":
-        navigate("/expert/trackplants");
+      case 'trackplants':
+        navigate('/expert/trackplants');
         break;
-      case "home":
-        navigate("/expert");
+      case 'home':
+        navigate('/expert');
         break;
 
-      case "orders":
-        navigate("/expert/orders");
+      case 'orders':
+        navigate('/expert/orders');
         break;
-      case "jobs":
-        navigate("/expert/jobs");
+      case 'jobs':
+        navigate('/expert/jobs');
         break;
       default:
         break;
@@ -69,7 +75,7 @@ const BottomNavigationE = ({ onTabChange }) => {
   const renderBottomNavButton = (tab, iconSrc, label) => (
     <button
       className={`flex flex-col items-center ${
-        activeTab === tab ? "text-green-600" : "text-gray-500"
+        activeTab === tab ? 'text-green-600' : 'text-gray-500'
       }`}
       onClick={() => handleTabChange(tab)}
     >
@@ -84,30 +90,18 @@ const BottomNavigationE = ({ onTabChange }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t z-10">
       <div className="mx-auto grid grid-cols-5 py-4 px-2">
-        {renderBottomNavButton(
-          "profile",
-          "/src/assets/images/engineering.png",
-          "Profile"
-        )}
-        {renderBottomNavButton(
-          "trackplants",
-          "/src/assets/images/disease.png",
-          "Track Plants"
-        )}
-        {renderBottomNavButton("home", "/src/assets/images/Home.png", "Home")}
-        {renderBottomNavButton(
-          "orders",
-          "/src/assets/images/box.png",
-          "Orders"
-        )}
-        {renderBottomNavButton("jobs", "src/assets/images/company.png", "Jobs")}
+        {renderBottomNavButton('profile', engineer, 'Profile')}
+        {renderBottomNavButton('trackplants', disease, 'Track Plants')}
+        {renderBottomNavButton('home', home, 'Home')}
+        {renderBottomNavButton('orders', box, 'Orders')}
+        {renderBottomNavButton('jobs',job,'Jobs')}
       </div>
     </nav>
   );
 };
 
 BottomNavigationE.propTypes = {
-  onTabChange: PropTypes.func,
+  onTabChange: PropTypes.func
 };
 
 export default BottomNavigationE;

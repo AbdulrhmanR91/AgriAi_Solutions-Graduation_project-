@@ -1,11 +1,14 @@
-import { Link } from "react-router-dom";
-import { Card, CardHeader, CardContent } from "../ui/card";
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardContent } from '../ui/card';
+import harvester from "/src/assets/images/harvester.png";
+import bell from "/src/assets/images/bell.png";
+import search from "/src/assets/images/search.png";
 
 const Consult = () => {
   const handleWhatsAppConsult = (phoneNumber) => {
-    const formattedNumber = phoneNumber.replace(/\D/g, "");
+    const formattedNumber = phoneNumber.replace(/\D/g, '');
     const whatsappUrl = `https://wa.me/${formattedNumber}`;
-    window.open(whatsappUrl, "_blank");
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -14,13 +17,10 @@ const Consult = () => {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Link
-                to="/farmer/profile"
-                className="flex items-center space-x-3"
-              >
+              <Link to="/farmer/profile" className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gray-300 rounded-full overflow-hidden">
                   <img
-                    src="/src/assets/images/harvester.png"
+                    src= {harvester}
                     alt="user Icon"
                     className="w-full h-full object-cover"
                   />
@@ -34,7 +34,7 @@ const Consult = () => {
             <Link to="/farmer/notifications" className="relative">
               <div className="w-6 h-6">
                 <img
-                  src="/src/assets/images/bell.png"
+                  src= {bell}
                   alt="notification Icon"
                   className="w-full h-full"
                 />
@@ -56,20 +56,14 @@ const Consult = () => {
             className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-green-400"
           />
           <div className="absolute left-4 top-1/2 -translate-y-1/2">
-            <img
-              src="/src/assets/images/search.png"
-              alt="Search Icon"
-              className="w-5 h-5"
-            />
+            <img src= {search} alt="Search Icon" className="w-5 h-5" />
           </div>
         </div>
 
         {/* Agricultural Experts Card */}
         <Card className="w-full">
           <CardHeader>
-            <h2 className="text-xl font-bold text-center">
-              Available Agricultural Experts 👨‍🌾
-            </h2>
+            <h2 className="text-xl font-bold text-center">Available Agricultural Experts 👨‍🌾</h2>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col items-center gap-6">
@@ -88,7 +82,7 @@ const Consult = () => {
                 </div>
                 <button
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                  onClick={() => handleWhatsAppConsult("+1234567890")}
+                  onClick={() => handleWhatsAppConsult('+1234567890')}
                 >
                   Consult Now
                 </button>
@@ -107,9 +101,9 @@ const Consult = () => {
                 </div>
                 <button
                   className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                  onClick={() => handleWhatsAppConsult("+1234567890")}
-                >
-                  Consult Now
+                  onClick={() => handleWhatsAppConsult('+1234567890')}
+                  >
+                    Consult Now
                 </button>
               </div>
             </div>

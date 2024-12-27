@@ -4,42 +4,44 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { RegistrationOptions } from "./RegistrationOptions";
+import logoh from '/src/assets/images/logoh.png';
 
+// Add logo import here
 export function LoginForm() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     emailOrPhone: "",
     password: "",
     rememberMe: false,
-    userType: "", // Add userType to track selected type
+    userType: "" // Add userType to track selected type
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    //  backend
-
+    
+    // Here you would typically validate credentials with your backend
+    // For now, we'll simulate a successful login
     if (!credentials.userType) {
       return; // Prevent submission if no user type is selected
     }
-
-    // Store auth info in localStorage
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userType", credentials.userType);
+    
+    // Store auth info in localStorage  
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userType', credentials.userType);
 
     // Redirect based on user type
-    switch (credentials.userType) {
-      case "farmer":
-        navigate("/farmer");
+    switch(credentials.userType) {
+      case 'farmer':
+        navigate('/farmer');
         break;
-      case "expert":
-        navigate("/expert");
+      case 'expert':
+        navigate('/expert');
         break;
-      case "company":
-        navigate("/company");
+      case 'company':
+        navigate('/company');
         break;
       default:
-        console.error("Invalid user type");
+        console.error('Invalid user type');
     }
   };
 
@@ -65,9 +67,7 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Password
-        </label>
+        <label className="block text-sm font-medium text-gray-700">Password</label>
         <Input
           type="password"
           placeholder="Enter your Password"
@@ -87,33 +87,33 @@ export function LoginForm() {
         <div className="flex space-x-4">
           <button
             type="button"
-            onClick={() => handleUserTypeChange("farmer")}
+            onClick={() => handleUserTypeChange('farmer')}
             className={`px-4 py-2 rounded-lg ${
-              credentials.userType === "farmer"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 text-gray-700"
+              credentials.userType === 'farmer'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-700'
             }`}
           >
             Farmer
           </button>
           <button
             type="button"
-            onClick={() => handleUserTypeChange("expert")}
+            onClick={() => handleUserTypeChange('expert')}
             className={`px-4 py-2 rounded-lg ${
-              credentials.userType === "expert"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 text-gray-700"
+              credentials.userType === 'expert'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-700'
             }`}
           >
             Expert
           </button>
           <button
             type="button"
-            onClick={() => handleUserTypeChange("company")}
+            onClick={() => handleUserTypeChange('company')}
             className={`px-4 py-2 rounded-lg ${
-              credentials.userType === "company"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 text-gray-700"
+              credentials.userType === 'company'
+                ? 'bg-green-600 text-white'
+                : 'bg-gray-200 text-gray-700'
             }`}
           >
             Company
@@ -165,8 +165,8 @@ const Login = () => {
       <div className="max-w-md w-full bg-white p-8 shadow-lg rounded-lg">
         <div className="flex justify-center items-center mb-4">
           <img
-            src="/src/assets/images/logo agri 3_enhanced.PNG"
-            alt="Logo"
+            src= {logoh}
+            alt="logo"
             className="w-40"
           />
         </div>
@@ -184,6 +184,6 @@ const Login = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Login;

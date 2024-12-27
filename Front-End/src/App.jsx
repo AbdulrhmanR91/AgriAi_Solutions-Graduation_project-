@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
-import Home from "./components/pages/Home";
-import Login from "./components/pages/Login";
+import Home from './components/pages/Home';
+import Login from './components/pages/Login';
 import FarmerRegistration from "./components/pages/Farmer/FarmerRegistration page";
 import ExpertRegistration from "./components/pages/Experts/ExpertRegistration";
 import CompanyRegistration from "./components/pages/Company/CompanyRegestration";
@@ -57,6 +57,8 @@ const FarmerRoutes = () => {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/Consult" element={<Consult />} />
         <Route path="/my-products" element={<MyProducts />} />
+
+
       </Routes>
       <BottomNavigationFarmer />
     </>
@@ -75,6 +77,7 @@ const CompanyRoutes = () => {
         <Route path="/my-products" element={<MyProductcompany />} />
         <Route path="/orders" element={<OrdersPage />} />
       </Routes>
+      
     </>
   );
 };

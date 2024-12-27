@@ -1,34 +1,34 @@
-import { useState } from "react";
-import { Pencil, Trash2, Eye, Share2 } from "lucide-react";
-import { Card, CardContent } from "../ui/card";
-import Dialog from "../ui/dialog";
-import { Link } from "react-router-dom";
-import BottomNavigation from "./BottomNavCompany";
+import { useState } from 'react';
+import { Pencil, Trash2, Eye, Share2 } from 'lucide-react';
+import { Card, CardContent } from '../ui/card';
+import Dialog from '../ui/dialog';
+import { Link } from 'react-router-dom';
+import BottomNavigation from './BottomNavCompany';
 
 const MyProductcompany = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editFormData, setEditFormData] = useState({
-    name: "",
-    type: "",
-    price: "",
-    quantity: "",
+    name: '',
+    type: '',
+    price: '',
+    quantity: ''
   });
-  const [activeTab, setActiveTab] = useState("home");
+  const [activeTab, setActiveTab] = useState('home');
 
   // Sample data - replace with your actual products data
   const [myProducts, setMyProducts] = useState([
     {
       id: 1,
-      name: "Organic Tomatoes",
-      type: "vegetables",
-      farm: "Your Farm",
-      location: "Alexandria",
-      price: "EGP 10/kg",
-      available: "500 kg",
-      status: "active",
-      publishDate: "2024-01-15",
+      name: 'Organic Tomatoes',
+      type: 'vegetables',
+      farm: 'Your Farm',
+      location: 'Alexandria',
+      price: 'EGP 10/kg',
+      available: '500 kg',
+      status: 'active',
+      publishDate: '2024-01-15'
     },
     // Add more products as needed
   ]);
@@ -38,8 +38,8 @@ const MyProductcompany = () => {
     setEditFormData({
       name: product.name,
       type: product.type,
-      price: product.price.replace("EGP ", "").replace("/kg", ""),
-      quantity: product.available.replace(" kg", ""),
+      price: product.price.replace('EGP ', '').replace('/kg', ''),
+      quantity: product.available.replace(' kg', '')
     });
     setIsEditDialogOpen(true);
   };
@@ -50,8 +50,8 @@ const MyProductcompany = () => {
   };
 
   const confirmDelete = () => {
-    setMyProducts((prevProducts) =>
-      prevProducts.filter((p) => p.id !== selectedProduct.id)
+    setMyProducts(prevProducts => 
+      prevProducts.filter(p => p.id !== selectedProduct.id)
     );
     setIsDeleteDialogOpen(false);
     setSelectedProduct(null);
@@ -59,31 +59,31 @@ const MyProductcompany = () => {
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
-
+    
     const updatedProduct = {
       ...selectedProduct,
       name: editFormData.name,
       type: editFormData.type,
       price: `EGP ${editFormData.price}/kg`,
-      available: `${editFormData.quantity} kg`,
+      available: `${editFormData.quantity} kg`
     };
 
-    setMyProducts((prevProducts) =>
-      prevProducts.map((p) =>
+    setMyProducts(prevProducts =>
+      prevProducts.map(p =>
         p.id === selectedProduct.id ? updatedProduct : p
       )
     );
 
     setIsEditDialogOpen(false);
     setSelectedProduct(null);
-    setEditFormData({ name: "", type: "", price: "", quantity: "" });
+    setEditFormData({ name: '', type: '', price: '', quantity: '' });
   };
 
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData((prev) => ({
+    setEditFormData(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
@@ -114,13 +114,13 @@ const MyProductcompany = () => {
                   </div>
                 </div>
                 <div className="absolute top-2 right-2 flex gap-2">
-                  <button
+                  <button 
                     className="p-1.5 rounded-full bg-white shadow-lg hover:bg-gray-50"
                     onClick={() => handleEdit(product)}
                   >
                     <Pencil className="w-4 h-4 text-blue-500" />
                   </button>
-                  <button
+                  <button 
                     className="p-1.5 rounded-full bg-white shadow-lg hover:bg-gray-50"
                     onClick={() => handleDelete(product)}
                   >
@@ -128,28 +128,20 @@ const MyProductcompany = () => {
                   </button>
                 </div>
               </div>
-
+              
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-lg text-gray-800">
-                    {product.name}
-                  </h3>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      product.status === "active"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
+                  <h3 className="font-semibold text-lg text-gray-800">{product.name}</h3>
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
                     {product.status}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500">{product.type}</p>
                 <p className="text-sm text-gray-500">{product.location}</p>
                 <div className="mt-3">
-                  <span className="text-green-500 font-bold text-xl">
-                    {product.price}
-                  </span>
+                  <span className="text-green-500 font-bold text-xl">{product.price}</span>
                   <div className="mt-2 text-sm text-gray-500">
                     Available: {product.available}
                   </div>
@@ -159,16 +151,16 @@ const MyProductcompany = () => {
                 </div>
 
                 <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() =>
-                      (window.location.href = `/product/${product.id}`)
-                    }
+                  <button 
+                    onClick={() => window.location.href = `/product/${product.id}`}
                     className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
                     View
                   </button>
-                  <button className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2">
+                  <button 
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2"
+                  >
                     <Share2 className="w-4 h-4" />
                     Share
                   </button>
@@ -180,12 +172,8 @@ const MyProductcompany = () => {
 
         {myProducts.length === 0 && (
           <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900">
-              No products yet
-            </h3>
-            <p className="mt-2 text-gray-500">
-              Start by adding your first product to the market.
-            </p>
+            <h3 className="text-lg font-medium text-gray-900">No products yet</h3>
+            <p className="mt-2 text-gray-500">Start by adding your first product to the market.</p>
             <Link
               to="/company/market"
               className="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
@@ -204,8 +192,7 @@ const MyProductcompany = () => {
       >
         <div className="p-4">
           <p className="text-gray-700">
-            Are you sure you want to delete {selectedProduct?.name}? This action
-            cannot be undone.
+            Are you sure you want to delete {selectedProduct?.name}? This action cannot be undone.
           </p>
           <div className="mt-6 flex gap-4">
             <button
@@ -232,9 +219,7 @@ const MyProductcompany = () => {
       >
         <form onSubmit={handleEditSubmit} className="space-y-4 p-4">
           <div>
-            <label className="block mb-2 text-sm font-medium">
-              Product Name*
-            </label>
+            <label className="block mb-2 text-sm font-medium">Product Name*</label>
             <input
               required
               name="name"
@@ -245,9 +230,7 @@ const MyProductcompany = () => {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium">
-              Product Type*
-            </label>
+            <label className="block mb-2 text-sm font-medium">Product Type*</label>
             <select
               required
               name="type"
@@ -265,9 +248,7 @@ const MyProductcompany = () => {
             </select>
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium">
-              Price per kg (EGP)*
-            </label>
+            <label className="block mb-2 text-sm font-medium">Price per kg (EGP)*</label>
             <input
               required
               type="number"
@@ -280,9 +261,7 @@ const MyProductcompany = () => {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium">
-              Available Quantity (kg)*
-            </label>
+            <label className="block mb-2 text-sm font-medium">Available Quantity (kg)*</label>
             <input
               required
               type="number"
@@ -311,7 +290,8 @@ const MyProductcompany = () => {
           </div>
         </form>
       </Dialog>
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab}  />
+      
     </div>
   );
 };
