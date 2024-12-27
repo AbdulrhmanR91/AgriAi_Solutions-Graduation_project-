@@ -14,7 +14,7 @@ Transform farming with our comprehensive platform offering:
 ## ⭐ Key Features
 
 ### 🔍 Disease Detection
-- 📸 Upload plant images
+- 📸 Take plant images with our Embeded system 
 - 🧠 AI-powered analysis
 - 💡 Smart treatment recommendations
 
