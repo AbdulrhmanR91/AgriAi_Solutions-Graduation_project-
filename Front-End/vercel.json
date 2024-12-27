@@ -1,8 +1,14 @@
 {
     "build": {
-      "env": {
-        "NODE_VERSION": "18"
+      "command": "npm run build",
+      "outputDirectory": "dist",
+      "framework": "vite"
+    },
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/index.html"
       }
-    }
+    ]
   }
   
