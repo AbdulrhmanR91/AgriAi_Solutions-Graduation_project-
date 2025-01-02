@@ -5,48 +5,42 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { RegistrationOptions } from "./RegistrationOptions";
 import logoh from '/src/assets/images/logoh.png';
+import { loginUser } from "../../../utils/apiService";
 
-// Add logo import here
 export function LoginForm() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     emailOrPhone: "",
     password: "",
-    rememberMe: false,
-    userType: "" // Add userType to track selected type
+    rememberMe: false
   });
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Here you would typically validate credentials with your backend
-    // For now, we'll simulate a successful login
-    if (!credentials.userType) {
-      return; // Prevent submission if no user type is selected
-    }
-    
-    // Store auth info in localStorage  
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userType', credentials.userType);
+    try {
+      const data = await loginUser({
+        email: credentials.emailOrPhone,
+        password: credentials.password
+      });
 
-    // Redirect based on user type
-    switch(credentials.userType) {
-      case 'farmer':
-        navigate('/farmer');
-        break;
-      case 'expert':
-        navigate('/expert');
-        break;
-      case 'company':
-        navigate('/company');
-        break;
-      default:
-        console.error('Invalid user type');
+      // Redirect based on user type from database
+      switch (data.user.userType) {
+        case 'farmer':
+          navigate('/farmer');
+          break;
+        case 'expert':
+          navigate('/expert');
+          break;
+        case 'company':
+          navigate('/company');
+          break;
+        default:
+          setError('Unknown user type');
+      }
+    } catch (error) {
+      setError(error.message || 'Login failed. Please try again!.');
     }
-  };
-
-  const handleUserTypeChange = (type) => {
-    setCredentials({ ...credentials, userType: type });
   };
 
   return (
@@ -67,7 +61,9 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Password</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Password
+        </label>
         <Input
           type="password"
           placeholder="Enter your Password"
@@ -79,47 +75,7 @@ export function LoginForm() {
         />
       </div>
 
-      {/* User Type Selection */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
-          Login As
-        </label>
-        <div className="flex space-x-4">
-          <button
-            type="button"
-            onClick={() => handleUserTypeChange('farmer')}
-            className={`px-4 py-2 rounded-lg ${
-              credentials.userType === 'farmer'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            Farmer
-          </button>
-          <button
-            type="button"
-            onClick={() => handleUserTypeChange('expert')}
-            className={`px-4 py-2 rounded-lg ${
-              credentials.userType === 'expert'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            Expert
-          </button>
-          <button
-            type="button"
-            onClick={() => handleUserTypeChange('company')}
-            className={`px-4 py-2 rounded-lg ${
-              credentials.userType === 'company'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-200 text-gray-700'
-            }`}
-          >
-            Company
-          </button>
-        </div>
-      </div>
+      {error && <p className="text-red-500 text-sm">{error}</p>}
 
       <div className="flex items-center justify-between">
         <label className="flex items-center space-x-2">
@@ -134,11 +90,11 @@ export function LoginForm() {
           <span className="text-sm text-gray-600">Remember me</span>
         </label>
         <a href="#" className="text-sm text-green-600 hover:text-green-500">
-          Forget Password?
+          Forgot Password?
         </a>
       </div>
 
-      <Button type="submit" className="w-full" disabled={!credentials.userType}>
+      <Button type="submit" className="w-full">
         Sign In
       </Button>
     </form>
@@ -164,11 +120,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full bg-white p-8 shadow-lg rounded-lg">
         <div className="flex justify-center items-center mb-4">
-          <img
-            src= {logoh}
-            alt="logo"
-            className="w-40"
-          />
+          <img src={logoh} alt="Logo" className="w-40" />
         </div>
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
           Sign In
@@ -184,6 +136,6 @@ const Login = () => {
       </div>
     </div>
   );
-}
+};
 
 export default Login;

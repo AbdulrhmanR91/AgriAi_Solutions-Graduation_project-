@@ -1,8 +1,20 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg'],
-})
+  base: '/',
+  build: {
+    outDir: 'dist'
+  },
+  server: {
+    open: true
+  },
+  // خاص بـ SPA: يعيد توجيه الطلبات إلى index.html
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  }
+});

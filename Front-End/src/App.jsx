@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Home from './components/pages/Home';
 import Login from './components/pages/Login';
 import FarmerRegistration from "./components/pages/Farmer/FarmerRegistration page";
@@ -31,6 +32,28 @@ import NotificationsPageE from "./components/pages/Experts/notificationE";
 const App = () => {
   return (
     <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            theme: {
+              primary: '#4CAF50',
+            },
+          },
+          error: {
+            duration: 4000,
+            theme: {
+              primary: '#f44336',
+            },
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

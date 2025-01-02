@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../ui/card';
 import engineer from "/src/assets/images/engineering.png";
 import search from "/src/assets/images/search.png";
-
+import bell from "/src/assets/images/bell.png"
 const Jobs = () => {
   const handleWhatsAppConsult = (phoneNumber) => {
     const formattedNumber = phoneNumber.replace(/\D/g, '');
@@ -33,7 +33,7 @@ const Jobs = () => {
             <Link to="/expert/notifications" className="relative">
               <div className="w-6 h-6">
                 <img
-                  src="/src/assets/images/bell.png"
+                  src= {bell}
                   alt="notification Icon"
                   className="w-full h-full"
                 />

@@ -135,87 +135,87 @@ const EngineerProfile = () => {
     
 
     return (
-        <div className="min-h-screen bg-gray-50 ">
-             <div className="p-8 pb-24">
-            <div className="max-w-3xl mx-auto ">
-                {/* Profile Header */}
-                <div className="text-center mb-8">
+        <div className="min-h-screen bg-gray-50">
+    <div className="p-8 pb-24">
+        <div className="max-w-3xl mx-auto">
+            {/* Profile Header */}
+            <div className="text-center mb-8">
                 <div className="relative">
-    <img
-        src={profileImage} // استخدام الصورة من الحالة
-        alt="Engineer profile"
-        className="rounded-full mx-auto w-32 h-32 object-cover border-4 border-white shadow-lg"
-    />
-    <label
-        htmlFor="imageUpload"
-        className="absolute bottom-0 right-1/2 translate-x-12 translate-y-2 p-2 bg-green-600 rounded-full text-white hover:bg-green-700 cursor-pointer"
-    >
-        <Edit2 className="w-4 h-4" />
-    </label>
-    <input
-        id="imageUpload"
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleImageChange} // وظيفة تغيير الصورة
-    />
-</div>
+                    <img
+                        src={profileImage}
+                        alt="Engineer profile"
+                        className="rounded-full mx-auto w-32 h-32 object-cover border-4 border-white shadow-lg"
+                    />
+                    <label
+                        htmlFor="imageUpload"
+                        className="absolute bottom-0 right-1/2 translate-x-12 translate-y-2 p-2 bg-green-600 rounded-full text-white hover:bg-green-700 cursor-pointer"
+                    >
+                        <Edit2 className="w-4 h-4" />
+                    </label>
+                    <input
+                        id="imageUpload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageChange}
+                    />
+                </div>
+            </div>
 
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
+                {/* Contact Information */}
+                <div className="bg-white p-6 rounded-lg shadow relative">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold">Contact Information</h2>
+                        <button
+                            onClick={() => setIsEditing({ ...isEditing, contact: !isEditing.contact })}
+                            className="text-green-600 hover:text-green-700"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                    {renderContactInfo()}
                 </div>
 
-                {/* Main Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
-                    {/* Contact Information */}
-                    <div className="bg-white p-6 rounded-lg shadow relative">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Contact Information</h2>
-                            <button
-                                onClick={() => setIsEditing({ ...isEditing, contact: !isEditing.contact })}
-                                className="text-green-600 hover:text-green-700"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        {renderContactInfo()}
+                {/* Specialization Details */}
+                <div className="bg-white p-6 rounded-lg shadow relative">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold">Specialization Details</h2>
+                        <button
+                            onClick={() =>
+                                setIsEditing({ ...isEditing, SpecializationDetails: !isEditing.SpecializationDetails })
+                            }
+                            className="text-green-600 hover:text-green-700"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
                     </div>
-
-                    {/* specialization Details */}
-                    <div className="bg-white p-6 rounded-lg shadow relative">
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-semibold">Specialization Details</h2>
-                            <button
-                                onClick={() => setIsEditing({ ...isEditing, SpecializationDetails: !isEditing.SpecializationDetails })}
-                                className="text-green-600 hover:text-green-700"
-                            >
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        {renderspecializationDetails()}
-                    </div>
+                    {renderspecializationDetails()}
                 </div>
+            </div>
 
-               
-                    </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-4 justify-center">
-                    <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    onClick={()=> navigate("/register/company")}>
-                        Register as Company
-                    </button>
-
-
+            {/* Action Buttons */}
+            <div className="flex flex-row gap-4 justify-center mt-4">
                 <button
-                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                    onClick={() => navigate("/register/farmer")}
+                    className="px-3 py-2 text-xs md:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-auto"
+                    style={{ minWidth: '120px' }}
+                >
+                    Register as Individual
+                </button>
+                <button
                     onClick={() => navigate("/")}
+                    className="px-3 py-2 text-xs md:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 w-auto"
+                    style={{ minWidth: '120px' }}
                 >
                     <LogOut className="w-4 h-4" />
                     Log Out
                 </button>
-                </div>
             </div>
-       
+        </div>
+    </div>
+</div>
       
    
     
