@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Lock, CheckSquare, Building2, MapPin, Map, FileText, Receipt } from 'lucide-react';
+import { Mail, Phone, Lock, CheckSquare, Building2, MapPin, FileText, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import logo from '/src/assets/images/logor2.png';
-import { registerUser } from '../../../../utils/apiService';
+import { registerUser } from '../../../utils/apiService';
 import PropTypes from 'prop-types';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -17,35 +17,7 @@ const countryCodes = [
     { code: '+44', country: 'UK' },
 ];
 
-const egyptianGovernorates = [
-    "Alexandria",
-    "Aswan",
-    "Asyut",
-    "Beheira",
-    "Beni Suef",
-    "Cairo",
-    "Dakahlia",
-    "Damietta",
-    "Faiyum",
-    "Gharbia",
-    "Giza",
-    "Ismailia",
-    "Kafr El Sheikh",
-    "Luxor",
-    "Matruh",
-    "Minya",
-    "Monufia",
-    "New Valley",
-    "North Sinai",
-    "Port Said",
-    "Qalyubia",
-    "Qena",
-    "Red Sea",
-    "Sharqia",
-    "Sohag",
-    "South Sinai",
-    "Suez"
-].sort();
+
 
 const validateCompanyName = (name) => {
     if (!name) return "Company name is required";
@@ -197,7 +169,6 @@ const CompanyRegistration = () => {
         phone: countryCodes[0].code,
         password: '',
         businessAddress: '',
-        governorate: '',
         tradeLicenseNumber: '',
         taxRegistrationNumber: '',
         tradeLicenseFile: null,
@@ -246,7 +217,6 @@ const CompanyRegistration = () => {
                 error = validateTaxNumber(value);
                 break;
             case 'businessAddress':
-            case 'governorate':
                 error = !value.trim() ? `${name} is required` : "";
                 break;
             default:
@@ -304,7 +274,6 @@ const CompanyRegistration = () => {
         }
         if (step === 2) {
             if (!formData.businessAddress) newErrors.businessAddress = "Business address is required.";
-            if (!formData.governorate) newErrors.governorate = "Governorate is required.";
             
             const tradeLicenseError = validateTradeLicense(formData.tradeLicenseNumber);
             if (tradeLicenseError) newErrors.tradeLicenseNumber = tradeLicenseError;
@@ -346,7 +315,6 @@ const CompanyRegistration = () => {
                 companyDetails: {
                     companyName: formData.companyName.trim(),
                     businessAddress: formData.businessAddress,
-                    governorate: formData.governorate,
                     tradeLicenseNumber: formData.tradeLicenseNumber,
                     taxRegistrationNumber: formData.taxRegistrationNumber,
                     location: position ? {
@@ -533,26 +501,7 @@ const CompanyRegistration = () => {
                                     </div>
                                 </div>
 
-                                <div className="relative">
-                                    <Map className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600" />
-                                    <select
-                                        name="governorate"
-                                        className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:outline-none focus:border-green-500 ${
-                                            errors.governorate ? 'border-red-500' : 'border-gray-300'
-                                        } bg-white`}
-                                        value={formData.governorate}
-                                        onChange={handleChange}
-                                        required
-                                    >
-                                        <option value="">Select Governorate</option>
-                                        {egyptianGovernorates.map((governorate) => (
-                                            <option key={governorate} value={governorate}>
-                                                {governorate}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.governorate && <p className="text-red-500 text-sm mt-1">{errors.governorate}</p>}
-                                </div>
+                               
 
                                 <div className="relative">
                                     <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-600" />

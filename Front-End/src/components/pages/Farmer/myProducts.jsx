@@ -1,295 +1,280 @@
-import { useState } from 'react';
-import { Pencil, Trash2, Eye, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '../ui/card';
+import { Edit, Trash2 } from 'lucide-react';
 import Dialog from '../ui/dialog';
+import { getMyProducts, updateProduct, deleteProduct } from '../../../utils/apiService';
+import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import user from '/src/assets/images/user.png';
+
+const BASE_URL = 'https://dark-gennifer-abdulrhman-5d081501.koyeb.app';
 
 const MyProducts = () => {
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    type: '',
-    price: '',
-    quantity: ''
-  });
-
-  // Sample data - replace with your actual products data
-  const [myProducts, setMyProducts] = useState([
-    {
-      id: 1,
-      name: 'Organic Tomatoes',
-      type: 'vegetables',
-      farm: 'Your Farm',
-      location: 'Alexandria',
-      price: 'EGP 10/kg',
-      available: '500 kg',
-      status: 'active',
-      publishDate: '2024-01-15'
-    },
-    // Add more products as needed
-  ]);
-
-  const handleEdit = (product) => {
-    setSelectedProduct(product);
-    setEditFormData({
-      name: product.name,
-      type: product.type,
-      price: product.price.replace('EGP ', '').replace('/kg', ''),
-      quantity: product.available.replace(' kg', '')
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        type: '',
+        price: '',
+        quantity: '',
+        description: '',
+        image: null
     });
-    setIsEditDialogOpen(true);
-  };
 
-  const handleDelete = (product) => {
-    setSelectedProduct(product);
-    setIsDeleteDialogOpen(true);
-  };
+    useEffect(() => {
+        loadMyProducts();
+    }, []);
 
-  const confirmDelete = () => {
-    setMyProducts(prevProducts => 
-      prevProducts.filter(p => p.id !== selectedProduct.id)
-    );
-    setIsDeleteDialogOpen(false);
-    setSelectedProduct(null);
-  };
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    
-    const updatedProduct = {
-      ...selectedProduct,
-      name: editFormData.name,
-      type: editFormData.type,
-      price: `EGP ${editFormData.price}/kg`,
-      available: `${editFormData.quantity} kg`
+    const loadMyProducts = async () => {
+        try {
+            const response = await getMyProducts();
+            if (response.success && response.data) {
+                setProducts(response.data);
+            } else {
+                toast.error('Failed to load products');
+            }
+        } catch (error) {
+            console.error('Load products error:', error);
+            toast.error(error.message || 'Failed to load products');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    setMyProducts(prevProducts =>
-      prevProducts.map(p =>
-        p.id === selectedProduct.id ? updatedProduct : p
-      )
+    const handleEdit = (product) => {
+        setSelectedProduct(product);
+        setFormData({
+            name: product.name,
+            type: product.type,
+            price: product.price,
+            quantity: product.quantity,
+            description: product.description || '',
+            image: null
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        try {
+            if (!formData.name || !formData.type || !formData.price || !formData.quantity) {
+                toast.error('Please fill all required fields');
+                return;
+            }
+
+            const price = Number(formData.price);
+            const quantity = Number(formData.quantity);
+
+            if (isNaN(price) || price < 0) {
+                toast.error('Please enter a valid price');
+                return;
+            }
+
+            if (isNaN(quantity) || quantity < 0) {
+                toast.error('Please enter a valid quantity');
+                return;
+            }
+
+            const updateData = new FormData();
+            updateData.append('name', formData.name.trim());
+            updateData.append('type', formData.type);
+            updateData.append('price', price);
+            updateData.append('quantity', quantity);
+            updateData.append('description', formData.description?.trim() || '');
+
+            if (formData.image instanceof File) {
+                console.log('Appending image file:', formData.image);
+                updateData.append('image', formData.image);
+            }
+
+            console.log('Sending update request for product:', selectedProduct._id);
+            const response = await updateProduct(selectedProduct._id, updateData);
+            
+            if (response.success) {
+                console.log('Product updated successfully:', response.data);
+                toast.success('Product updated successfully!');
+                setIsEditDialogOpen(false);
+                await loadMyProducts();
+            } else {
+                toast.error(response.message || 'Failed to update product');
+            }
+        } catch (error) {
+            console.error('Update product error:', error);
+            toast.error(error.message || 'Failed to update product');
+        }
+    };
+
+    const handleDelete = async (productId) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                await deleteProduct(productId);
+                toast.success('Product deleted successfully!');
+                loadMyProducts();
+            } catch (error) {
+                toast.error(error.message || 'Failed to delete product');
+            }
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          );    }
+
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-2xl font-bold text-gray-800">My Products</h1>
+                    <Link
+                        to="/farmer/market"
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                    >
+                        Back to Market
+                    </Link>
+                </div>
+
+                {products.length === 0 ? (
+                    <div className="text-center py-10">
+                        <p className="text-gray-500">No products found</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {products.map((product) => (
+                            <Card key={product._id} className="overflow-hidden">
+                                <div className="relative w-full h-48">
+                                    <img
+                                        src={product.image ? `${BASE_URL}${product.image}` : user}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            console.error('Image load error:', e);
+                                            e.target.src = user;
+                                        }}
+                                    />
+                                </div>
+                                <CardContent className="p-4">
+                                    <h3 className="font-semibold text-lg">{product.name}</h3>
+                                    <p className="text-gray-600 mb-2">{product.description}</p>
+                                    <p className="text-green-600 font-bold mb-4">EGP {product.price}</p>
+                                    <div className="flex justify-between">
+                                        <button
+                                            onClick={() => handleEdit(product)}
+                                            className="flex items-center gap-2 text-blue-500 hover:text-blue-600"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(product._id)}
+                                            className="flex items-center gap-2 text-red-500 hover:text-red-600"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete
+                                        </button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Edit Dialog */}
+            <Dialog
+                open={isEditDialogOpen}
+                onClose={() => setIsEditDialogOpen(false)}
+                title="Edit Product"
+            >
+                <form onSubmit={handleUpdate} className="space-y-4">
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Product Name*</label>
+                        <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Category*</label>
+                        <select
+                            value={formData.type}
+                            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            required
+                        >
+                            <option value="">Select category</option>
+                            <option value="Equipment">Equipment</option>
+                            <option value="Pesticides">Pesticides</option>
+                            <option value="Seeds">Seeds</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Cotton">Cotton</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Price (EGP)*</label>
+                        <input
+                            type="number"
+                            value={formData.price}
+                            onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Quantity*</label>
+                        <input
+                            type="number"
+                            value={formData.quantity}
+                            onChange={(e) => setFormData(prev => ({ ...prev, quantity: e.target.value }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Description</label>
+                        <textarea
+                            value={formData.description}
+                            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            rows="3"
+                        />
+                    </div>
+                    <div>
+                        <label className="block mb-2 text-sm font-medium">Product Image</label>
+                        <input
+                            type="file"
+                            onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.files[0] }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg"
+                            accept="image/*"
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsEditDialogOpen(false)}
+                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                        >
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </Dialog>
+        </div>
     );
-
-    setIsEditDialogOpen(false);
-    setSelectedProduct(null);
-    setEditFormData({ name: '', type: '', price: '', quantity: '' });
-  };
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="sticky top-0 bg-white shadow-sm z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800">My Products</h1>
-            <Link
-              to="/farmer/market"
-              className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-            >
-              + Add New Product
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {myProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <div className="relative">
-                <div className="aspect-w-1 aspect-h-1">
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-400">
-                    <span>No Image</span>
-                  </div>
-                </div>
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <button 
-                    className="p-1.5 rounded-full bg-white shadow-lg hover:bg-gray-50"
-                    onClick={() => handleEdit(product)}
-                  >
-                    <Pencil className="w-4 h-4 text-blue-500" />
-                  </button>
-                  <button 
-                    className="p-1.5 rounded-full bg-white shadow-lg hover:bg-gray-50"
-                    onClick={() => handleDelete(product)}
-                  >
-                    <Trash2 className="w-4 h-4 text-red-500" />
-                  </button>
-                </div>
-              </div>
-              
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-lg text-gray-800">{product.name}</h3>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    product.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {product.status}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500">{product.type}</p>
-                <p className="text-sm text-gray-500">{product.location}</p>
-                <div className="mt-3">
-                  <span className="text-green-500 font-bold text-xl">{product.price}</span>
-                  <div className="mt-2 text-sm text-gray-500">
-                    Available: {product.available}
-                  </div>
-                  <div className="mt-2 text-sm text-gray-500">
-                    Published: {product.publishDate}
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <button 
-                    onClick={() => window.location.href = `/product/${product.id}`}
-                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2"
-                  >
-                    <Eye className="w-4 h-4" />
-                    View
-                  </button>
-                  <button 
-                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-lg flex items-center justify-center gap-2"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {myProducts.length === 0 && (
-          <div className="text-center py-12">
-            <h3 className="text-lg font-medium text-gray-900">No products yet</h3>
-            <p className="mt-2 text-gray-500">Start by adding your first product to the market.</p>
-            <Link
-              to="/farmer/market"
-              className="mt-4 inline-block bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-            >
-              Add Product
-            </Link>
-          </div>
-        )}
-      </main>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        title="Delete Product"
-      >
-        <div className="p-4">
-          <p className="text-gray-700">
-            Are you sure you want to delete {selectedProduct?.name}? This action cannot be undone.
-          </p>
-          <div className="mt-6 flex gap-4">
-            <button
-              onClick={() => setIsDeleteDialogOpen(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={confirmDelete}
-              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </Dialog>
-
-      {/* Edit Product Dialog */}
-      <Dialog
-        open={isEditDialogOpen}
-        onClose={() => setIsEditDialogOpen(false)}
-        title="Edit Product"
-      >
-        <form onSubmit={handleEditSubmit} className="space-y-4 p-4">
-          <div>
-            <label className="block mb-2 text-sm font-medium">Product Name*</label>
-            <input
-              required
-              name="name"
-              value={editFormData.name}
-              onChange={handleEditInputChange}
-              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Enter Product Name"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm font-medium">Product Type*</label>
-            <select
-              required
-              name="type"
-              value={editFormData.type}
-              onChange={handleEditInputChange}
-              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select Type</option>
-              <option value="equipment">Equipment</option>
-              <option value="pesticides">Pesticides</option>
-              <option value="seeds">Seeds</option>
-              <option value="vegetables">Vegetables</option>
-              <option value="fruits">Fruits</option>
-              <option value="cotton">Cotton</option>
-            </select>
-          </div>
-          <div>
-            <label className="block mb-2 text-sm font-medium">Price per kg (EGP)*</label>
-            <input
-              required
-              type="number"
-              min="0"
-              name="price"
-              value={editFormData.price}
-              onChange={handleEditInputChange}
-              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Enter Price per kg"
-            />
-          </div>
-          <div>
-            <label className="block mb-2 text-sm font-medium">Available Quantity (kg)*</label>
-            <input
-              required
-              type="number"
-              min="1"
-              name="quantity"
-              value={editFormData.quantity}
-              onChange={handleEditInputChange}
-              className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Enter Available Quantity"
-            />
-          </div>
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setIsEditDialogOpen(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-colors duration-200"
-            >
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    </div>
-  );
 };
 
 export default MyProducts;

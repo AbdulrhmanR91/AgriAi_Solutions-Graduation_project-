@@ -1,225 +1,416 @@
-import { useState } from 'react';
-import { LogOut, Mail, Phone, MapPin,  Edit2,Star } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
-import engineerimg from "/src/assets/images/engineering.png";
-import service from "/src/assets/images/service.png";
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Phone, Edit2, Star, LogOut, Award, BookOpen } from 'lucide-react';
+import { getExpertProfile, updateExpertProfile, uploadProfileImage } from '../../../utils/apiService';
+import { useUser } from '../../../context/UserContext';
+import toast from 'react-hot-toast';
+import user from '/src/assets/images/user.png';
 
-const EngineerProfile = () => {
+const ExpertProfile = () => {
     const navigate = useNavigate();
-    const [profileImage, setProfileImage] = useState(engineerimg); // الصورة الحالية
-
-
-
+    const { updateUser } = useUser();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [expert, setExpert] = useState(null);
     const [isEditing, setIsEditing] = useState({
         contact: false,
-        SpecializationDetails: false,
+        expertDetails: false,
     });
-
-    const [engineer, setEngineer] = useState({
-        name: "Eng.Mohamed",
-        location: "Monufia, Eg",
-        contact: {
-            email: "Mohamed@email.com",
-            phone: "(555) 123-4567",
-            address: "Monufia, Egypt",
-        },
-        SpecializationDetails: {
-            Specialization: "Bachelor of Agriculture Engineering",
-            ServicesTypes:"Agricultural Consultation",
-        },
-       
-    });  
-
-
-    const handleSave = (section) => {
-        setIsEditing({ ...isEditing, [section]: false });
-        // Here you would typically save the changes to your backend
+    const [profileImage, setProfileImage] = useState('');
+    
+    const BASE_URL = 'https://dark-gennifer-abdulrhman-5d081501.koyeb.app';
+    const getImageUrl = (imagePath) => {
+        if (!imagePath) return user;
+        if (imagePath.startsWith('http')) return imagePath;
+        return `${BASE_URL}${imagePath}`;
     };
 
-    const renderEditableField = (field, value, onChange) => (
-        <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full p-2 border rounded"
-        />
-    );
+    const loadExpertProfile = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await getExpertProfile();
+            
+            if (!data) {
+                throw new Error('No data received from server');
+            }
+
+            setExpert({
+                name: data.name || '',
+                email: data.email || '',
+                contact: {
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    address: data.location || ''
+                },
+                expertDetails: {
+                    expertAt: data.expertDetails?.expertAt || '',
+                    university: data.expertDetails?.university || '',
+                    college: data.expertDetails?.college || '',
+                    services: Array.isArray(data.expertDetails?.services) 
+                        ? data.expertDetails.services 
+                        : []
+                },
+                profileImage: getImageUrl(data.profileImage)
+            });
+            setProfileImage(getImageUrl(data.profileImage));
+            setError(null);
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            setError(error.message || 'Failed to load profile');
+            if (error.response?.status === 401) {
+                navigate('/login');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user")); // الحصول على الكائن user
     
-    const handleImageChange = (event) => {
-        const file = event.target.files[0]; // الحصول على الملف المختار
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setProfileImage(e.target.result); // تحديث الصورة
-            };
-            reader.readAsDataURL(file);
+        if (!token || !user) {
+          navigate("/login");
+          return;
+        }
+    
+        // التحقق من نوع المستخدم
+        if (user.userType !== "expert") {
+          navigate("/expert"); // أو أي صفحة أخرى تناسب المستخدم
+          return;
+        }
+    
+        loadExpertProfile();
+      }, [navigate, loadExpertProfile]);
+
+    const handleSave = async (section) => {
+        try {
+            setLoading(true);
+            let updates = {};
+
+            if (section === 'contact') {
+                updates = {
+                    email: expert.contact.email,
+                    phone: expert.contact.phone,
+                    location: expert.contact.address
+                };
+            } else if (section === 'expertDetails') {
+                updates = {
+                    expertDetails: {
+                    expertAt: expert.expertDetails.expertAt,
+                    university: expert.expertDetails.university,
+                    college: expert.expertDetails.college,
+                    services: expert.expertDetails.services
+                    }
+                };
+            }
+
+            const response = await updateExpertProfile(updates);
+            if (response.success) {
+                toast.success('Profile updated successfully');
+                setIsEditing({ ...isEditing, [section]: false });
+                await loadExpertProfile();
+            } else {
+                throw new Error(response.message || 'Failed to update profile');
+            }
+        } catch (error) {
+            toast.error(error.message || 'Failed to update profile');
+            console.error('Error updating profile:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const renderContactInfo = () => (
-        <div className="space-y-3">
-            {isEditing.contact ? (
-                <>
-                    {renderEditableField("email", engineer.contact.email, (value) =>
-                        setEngineer({ ...engineer, contact: { ...engineer.contact, email: value } })
-                    )}
-                    {renderEditableField("phone", engineer.contact.phone, (value) =>
-                        setEngineer({ ...engineer, contact: { ...engineer.contact, phone: value } })
-                    )}
-                    {renderEditableField("address", engineer.contact.address, (value) =>
-                        setEngineer({ ...engineer, contact: { ...engineer.contact, address: value } })
-                    )}
-                    <button
-                        onClick={() => handleSave('contact')}
-                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Save
-                    </button>
-                </>
-            ) : (
-                <>
-                    <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-green-600" />
-                        <span>{engineer.contact.email}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Phone className="w-5 h-5 text-green-600" />
-                        <span>{engineer.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-green-600" />
-                        <span>{engineer.contact.address}</span>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+    const handleLogout = () => {
+        if (window.confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userType');
+            navigate('/login');
+        }
+    };
 
-    const renderspecializationDetails = () => (
-        <div className="space-y-3">
-            {isEditing.SpecializationDetails ? (
-                <>
-                    {renderEditableField("Specialization", engineer.SpecializationDetails.Specialization, (value) =>
-                        setEngineer({ ...engineer, SpecializationDetails: { ...engineer.SpecializationDetails, Specialization: value } })
-                    )}
-                    {renderEditableField("ServicesTypes", engineer.SpecializationDetails.ServicesTypes, (value) =>
-                        setEngineer({ ...engineer, SpecializationDetails: { ...engineer.SpecializationDetails, ServicesTypes: value } })
-                    )}
-                    <button
-                        onClick={() => handleSave('SpecializationDetails')}
-                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Save
-                    </button>
-                </>
-            ) : (
-                <>
-                    <div className="flex items-center gap-3">
-                        <Star className="w-5 h-5 text-green-600" />
-                        <span>Specialization: {engineer.SpecializationDetails.Specialization}</span>
-                    </div>
-                   
-                    <div className="flex items-center gap-3">
-                    <img 
-        src={service} 
-        alt="Icon" 
-        className="w-6 h-6" // تصغير الصورة إلى حجم صغير
-    />
-                        <span>Services Types: {engineer.SpecializationDetails.ServicesTypes}</span>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+    const handleImageUpload = async (event) => {
+        try {
+            const file = event.target.files[0];
+            if (!file) return;
 
-    
+            setLoading(true);
+            const formData = new FormData();
+            formData.append('profileImage', file);
+
+            const response = await uploadProfileImage(formData);
+            
+            if (response.success) {
+                const imageUrl = response.imageUrl;
+                
+                // تحديث الحالة المحلية
+                setExpert(prev => ({
+                    ...prev,
+                    profileImage: getImageUrl(imageUrl)
+                }));
+
+                // تحديث سياق المستخدم
+                updateUser(currentUser => ({
+                    ...currentUser,
+                    profileImage: imageUrl
+                }));
+                
+                toast.success('تم تحديث صورة الملف الشخصي بنجاح');
+                
+                // إعادة تحميل بيانات الملف الشخصي
+                await loadExpertProfile();
+            } else {
+                throw new Error(response.message || 'فشل في تحديث الصورة');
+            }
+        } catch (error) {
+            console.error('Image upload error:', error);
+            toast.error(error.message || 'فشل في تحديث صورة الملف الشخصي');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          );
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+                <div className="text-red-500 text-xl mb-4">{error}</div>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
-    <div className="p-8 pb-24">
-        <div className="max-w-3xl mx-auto">
-            {/* Profile Header */}
-            <div className="text-center mb-8">
-                <div className="relative">
-                    <img
-                        src={profileImage}
-                        alt="Engineer profile"
-                        className="rounded-full mx-auto w-32 h-32 object-cover border-4 border-white shadow-lg"
-                    />
-                    <label
-                        htmlFor="imageUpload"
-                        className="absolute bottom-0 right-1/2 translate-x-12 translate-y-2 p-2 bg-green-600 rounded-full text-white hover:bg-green-700 cursor-pointer"
-                    >
-                        <Edit2 className="w-4 h-4" />
-                    </label>
-                    <input
-                        id="imageUpload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageChange}
-                    />
-                </div>
-            </div>
+            <div className="p-8 pb-24">
+                <div className="max-w-3xl mx-auto">
+                    {/* Profile Header */}
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <div className="text-center">
+                            <div className="relative inline-block">
+                                <img
+                                    src={profileImage || user}
+                                    alt="Expert profile"
+                                    className="rounded-full w-20 sm:w-32 h-20 sm:h-32 object-cover border-4 border-white shadow-lg mx-auto"
+                                    onError={(e) => {
+                                        e.target.src = user;
+                                        e.target.onerror = null;
+                                    }}
+                                />
+                                <label className="absolute bottom-0 right-0 p-2 bg-green-600 rounded-full text-white hover:bg-green-700 cursor-pointer">
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/jpeg,image/png,image/jpg"
+                                        onChange={handleImageUpload}
+                                    />
+                                    <Edit2 className="w-4 h-4" />
+                                </label>
+                            </div>
+                            <h1 className="text-2xl font-bold text-gray-900 mt-4">{expert.name}</h1>
+                            <p className="text-green-600 font-medium">{expert.expertDetails.expertAt}</p>
+                        </div>
+                    </div>
 
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
-                {/* Contact Information */}
-                <div className="bg-white p-6 rounded-lg shadow relative">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Contact Information</h2>
+                    
+                    {/* Contact Information */}
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">Contact Information</h2>
+                           
+                        </div>
+                        {isEditing.contact ? (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        value={expert.contact.email}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            contact: { ...expert.contact, email: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <input
+                                        type="tel"
+                                        value={expert.contact.phone}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            contact: { ...expert.contact, phone: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                    <input
+                                        type="text"
+                                        value={expert.contact.address}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            contact: { ...expert.contact, address: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => handleSave('contact')}
+                                    className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Mail className="w-5 h-5 text-green-600" />
+                                    <span>{expert.contact.email}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Phone className="w-5 h-5 text-green-600" />
+                                    <span>{expert.contact.phone}</span>
+                                </div>
+                                
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Professional Details */}
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold">Professional Details</h2>
+                            
+                        </div>
+                        {isEditing.expertDetails ? (
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                                    <input
+                                        type="text"
+                                        value={expert.expertDetails.expertAt}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            expertDetails: { ...expert.expertDetails, expertAt: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">University</label>
+                                    <input
+                                        type="text"
+                                        value={expert.expertDetails.university}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            expertDetails: { ...expert.expertDetails, university: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">College</label>
+                                    <input
+                                        type="text"
+                                        value={expert.expertDetails.college}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            expertDetails: { ...expert.expertDetails, college: e.target.value }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Services</label>
+                                    <textarea
+                                        value={expert.expertDetails.services.join(', ')}
+                                        onChange={(e) => setExpert({
+                                            ...expert,
+                                            expertDetails: {
+                                                ...expert.expertDetails,
+                                                services: e.target.value.split(',').map(s => s.trim())
+                                            }
+                                        })}
+                                        className="w-full p-2 border rounded focus:border-green-500 focus:outline-none"
+                                        rows="3"
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => handleSave('expertDetails')}
+                                    className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <Star className="w-5 h-5 text-green-600" />
+                                    <div>
+                                        <span className="font-medium">Specialization:</span>
+                                        <span className="ml-2">{expert.expertDetails.expertAt}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Award className="w-5 h-5 text-green-600" />
+                                    <div>
+                                        <span className="font-medium">University:</span>
+                                        <span className="ml-2">{expert.expertDetails.university}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <BookOpen className="w-5 h-5 text-green-600" />
+                                    <div>
+                                        <span className="font-medium">College:</span>
+                                        <span className="ml-2">{expert.expertDetails.college}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="font-medium mb-2">Services:</div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {expert.expertDetails.services.map((service, index) => (
+                                            <span
+                                                key={index}
+                                                className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                                            >
+                                                {service}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Logout Button */}
+                    <div className="flex justify-center">
                         <button
-                            onClick={() => setIsEditing({ ...isEditing, contact: !isEditing.contact })}
-                            className="text-green-600 hover:text-green-700"
+                            onClick={handleLogout}
+                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
                         >
-                            <Edit2 className="w-4 h-4" />
+                            <LogOut className="w-4 h-4" />
+                            Logout
                         </button>
                     </div>
-                    {renderContactInfo()}
                 </div>
-
-                {/* Specialization Details */}
-                <div className="bg-white p-6 rounded-lg shadow relative">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Specialization Details</h2>
-                        <button
-                            onClick={() =>
-                                setIsEditing({ ...isEditing, SpecializationDetails: !isEditing.SpecializationDetails })
-                            }
-                            className="text-green-600 hover:text-green-700"
-                        >
-                            <Edit2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                    {renderspecializationDetails()}
-                </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-row gap-4 justify-center mt-4">
-                <button
-                    onClick={() => navigate("/register/farmer")}
-                    className="px-3 py-2 text-xs md:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors w-auto"
-                    style={{ minWidth: '120px' }}
-                >
-                    Register as Individual
-                </button>
-                <button
-                    onClick={() => navigate("/")}
-                    className="px-3 py-2 text-xs md:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 w-auto"
-                    style={{ minWidth: '120px' }}
-                >
-                    <LogOut className="w-4 h-4" />
-                    Log Out
-                </button>
             </div>
         </div>
-    </div>
-</div>
-      
-   
-    
     );
 };
 
-export default EngineerProfile;
+export default ExpertProfile;

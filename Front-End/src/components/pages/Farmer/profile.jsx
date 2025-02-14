@@ -1,219 +1,440 @@
-import { useState } from 'react';
-import { LogOut, Mail, Phone, MapPin, Droplet, Edit2, Sprout } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
-import harvester from "/src/assets/images/harvester.png";
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Phone, MapPin, LogOut, Wheat, Plus, Camera } from 'lucide-react';
+import harvester from '/src/assets/images/harvester.png';
+import { getFarmerProfile, addNewFarm, uploadProfileImage, getImageUrl } from '../../../utils/apiService';
+import { useFarmer } from '../../../hooks/useFarmer';
+import toast from 'react-hot-toast';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// تعريف أيقونة الموقع
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow
+});
+
+const LocationPicker = ({ onLocationSelect }) => {
+    useMapEvents({
+        click(e) {
+            const { lat, lng } = e.latlng;
+            onLocationSelect({ lat, lng });
+        },
+    });
+    return null;
+};
+
+// دالة تحويل الإحداثيات إلى عنوان تفصيلي
+const getAddressFromCoordinates = async (lat, lng) => {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
+        const data = await response.json();
+        
+        // تجميع العنوان بالإنجليزية
+        const address = [];
+        const details = data.address;
+        
+        if (details.road) address.push(details.road);
+        if (details.suburb) address.push(details.suburb);
+        if (details.city || details.town || details.village) {
+            address.push(details.city || details.town || details.village);
+        }
+        if (details.state) address.push(details.state);
+        if (details.country) address.push(details.country);
+        
+        // دمج العنوان مع الإحداثيات
+        const coordinates = `(${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+        const addressText = address.length > 0 ? address.join(', ') : 'Unknown location';
+        
+        return `${addressText} ${coordinates}`;
+    } catch (error) {
+        console.error('Error getting address:', error);
+        return `Unknown location (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+    }
+};
 
 const FarmerProfile = () => {
     const navigate = useNavigate();
-
-    const [isEditing, setIsEditing] = useState({
-        contact: false,
-        farmDetails: false,
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [farmer, setFarmer] = useState(null);
+    const { updateFarmerData } = useFarmer();
+    const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [locationAddress, setLocationAddress] = useState('');
+    const [newFarmData, setNewFarmData] = useState({
+        farmName: '',
+        farmLocation: '',
+        farmSize: '',
+        mainCrops: ''
     });
 
-    const [farmer, setFarmer] = useState({
-        name: "Abdulrhman",
-        location: "Monufia, Eg",
-        contact: {
-            email: "abdo@email.com",
-            phone: "(555) 123-4567",
-            address: "Monufia, Egypt",
-        },
-        farmDetails: {
-            totalArea: "500 acres",
-            irrigatedArea: "400 acres",
-            primaryCrops: ["Corn", "Soybeans", "Wheat"],
-        },
-        recentActivity: [
-            { date: "2024-12-15", activity: "Crop rotation completed" },
-            { date: "2024-12-10", activity: "Irrigation system maintenance" },
-            { date: "2024-12-05", activity: "Soil testing performed" },
-        ],
-    });
-
-    const handleSave = (section) => {
-        setIsEditing({ ...isEditing, [section]: false });
-        // Here you would typically save the changes to your backend
+    const handleLocationSelect = async (location) => {
+        setSelectedLocation(location);
+        const address = await getAddressFromCoordinates(location.lat, location.lng);
+        setLocationAddress(address);
     };
 
-    const renderEditableField = (field, value, onChange) => (
-        <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="w-full p-2 border rounded"
-        />
-    );
+    const loadFarmerProfile = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await getFarmerProfile();
+            
+            // تحويل المواقع إلى عناوين
+            let farms = Array.isArray(data.farms) ? 
+                [...(data.farmDetails ? [data.farmDetails] : []), ...data.farms] : 
+                data.farmDetails ? [data.farmDetails] : [];
 
-    const renderContactInfo = () => (
-        <div className="space-y-3">
-            {isEditing.contact ? (
-                <>
-                    {renderEditableField("email", farmer.contact.email, (value) =>
-                        setFarmer({ ...farmer, contact: { ...farmer.contact, email: value } })
-                    )}
-                    {renderEditableField("phone", farmer.contact.phone, (value) =>
-                        setFarmer({ ...farmer, contact: { ...farmer.contact, phone: value } })
-                    )}
-                    {renderEditableField("address", farmer.contact.address, (value) =>
-                        setFarmer({ ...farmer, contact: { ...farmer.contact, address: value } })
-                    )}
-                    <button
-                        onClick={() => handleSave('contact')}
-                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Save
-                    </button>
-                </>
-            ) : (
-                <>
-                    <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-green-600" />
-                        <span>{farmer.contact.email}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Phone className="w-5 h-5 text-green-600" />
-                        <span>{farmer.contact.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-green-600" />
-                        <span>{farmer.contact.address}</span>
-                    </div>
-                </>
-            )}
+            // تحويل إحداثيات كل مزرعة إلى عنوان
+            for (let farm of farms) {
+                if (farm.farmLocation) {
+                    const [lat, lng] = farm.farmLocation.split(',').map(coord => parseFloat(coord.trim()));
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        farm.farmLocationText = await getAddressFromCoordinates(lat, lng);
+                    }
+                }
+            }
+            
+            setFarmer({
+                ...data,
+                name: data.name,
+                contact: {
+                    email: data.email,
+                    phone: data.phone,
+                    location: data.location || ''
+                },
+                farms
+            });
+            setError(null);
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            setError(error.message);
+            if (error.message.includes('unauthorized')) {
+                navigate('/login');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [navigate]);
+
+    useEffect(() => {
+        loadFarmerProfile();
+    }, [loadFarmerProfile]);
+
+    const handleLogout = () => {
+        if (window.confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            navigate('/login');
+        }
+    };
+
+    const handleImageUpload = async (event) => {
+        try {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('profileImage', file);
+
+            const response = await uploadProfileImage(formData);
+            
+            // تحديث الصورة في الحالة المحلية وفي السياق
+            const updatedData = {
+                ...farmer,
+                profileImage: response.imageUrl
+            };
+            setFarmer(updatedData);
+            updateFarmerData(updatedData);
+
+            // تحديث بيانات المستخدم في localStorage
+            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const updatedUser = {
+                ...storedUser,
+                profileImage: response.imageUrl
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            // إعادة تحميل بيانات الملف الشخصي
+            await loadFarmerProfile();
+            
+            toast.success(' updated successfully');
+        } catch (error) {
+            console.error('Image upload error:', error);
+            toast.error(error.message || 'Failed to upload image');
+        }
+    };
+
+    const handleAddFarm = async (e) => {
+        e.preventDefault();
+        try {
+            if (!selectedLocation) {
+                toast.error('الرجاء تحديد موقع المزرعة على الخريطة');
+                return;
+            }
+
+            const mainCrops = newFarmData.mainCrops
+                .split(',')
+                .map(crop => crop.trim())
+                .filter(crop => crop.length > 0);
+
+            const farmData = {
+                ...newFarmData,
+                farmLocation: `${selectedLocation.lat},${selectedLocation.lng}`,
+                farmLocationText: locationAddress,
+                farmSize: parseFloat(newFarmData.farmSize),
+                mainCrops
+            };
+
+            await addNewFarm(farmData);
+            toast.success('تمت إضافة المزرعة بنجاح');
+            setShowAddFarmModal(false);
+            setSelectedLocation(null);
+            setLocationAddress('');
+            loadFarmerProfile();
+        } catch (error) {
+            toast.error(error.message || 'فشل في إضافة المزرعة');
+        }
+    };
+
+    if (loading) {
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        );
+      }
+          if (error) return (
+        <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center p-4">
+            <div className="text-red-500 text-center mb-4">{error}</div>
+            <button
+                onClick={() => {
+                    setError(null);
+                    setLoading(true);
+                    loadFarmerProfile();
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+                Try Again
+            </button>
         </div>
     );
-
-    const renderFarmDetails = () => (
-        <div className="space-y-3">
-            {isEditing.farmDetails ? (
-                <>
-                    {renderEditableField("totalArea", farmer.farmDetails.totalArea, (value) =>
-                        setFarmer({ ...farmer, farmDetails: { ...farmer.farmDetails, totalArea: value } })
-                    )}
-                    {renderEditableField("irrigatedArea", farmer.farmDetails.irrigatedArea, (value) =>
-                        setFarmer({ ...farmer, farmDetails: { ...farmer.farmDetails, irrigatedArea: value } })
-                    )}
-                    {renderEditableField("primaryCrops", farmer.farmDetails.primaryCrops.join(", "), (value) =>
-                        setFarmer({ ...farmer, farmDetails: { ...farmer.farmDetails, primaryCrops: value.split(", ") } })
-                    )}
-                    <button
-                        onClick={() => handleSave('farmDetails')}
-                        className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Save
-                    </button>
-                </>
-            ) : (
-                <>
-                    <div className="flex items-center gap-3">
-                        <MapPin className="w-5 h-5 text-green-600" />
-                        <span>Total Area: {farmer.farmDetails.totalArea}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Droplet className="w-5 h-5 text-green-600" />
-                        <span>Irrigated Area: {farmer.farmDetails.irrigatedArea}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Sprout className="w-5 h-5 text-green-600" />
-                        <span>Primary Crops: {farmer.farmDetails.primaryCrops.join(", ")}</span>
-                    </div>
-                </>
-            )}
-        </div>
-    );
+    if (!farmer) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50 ">
-            <div className="p-8 pb-24">
-                <div className="max-w-3xl mx-auto ">
-                    {/* Profile Header */}
-                    <div className="text-center mb-8">
-                        <div className="relative">
-                            <img
-                                src={harvester}
-                                alt="Farmer profile"
-                                className="rounded-full mx-auto w-32 h-32 object-cover border-4 border-white shadow-lg"
-                            />
-                            <button className="absolute bottom-0 right-1/2 translate-x-12 translate-y-2 p-2 bg-green-600 rounded-full text-white hover:bg-green-700">
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="mt-4 relative inline-block">
-                            <h1 className="text-2xl font-bold text-gray-900">{farmer.name}</h1>
-                            <p className="text-gray-600 flex items-center justify-center gap-2">
-                                <MapPin className="w-4 h-4" />
-                                {farmer.location}
-                            </p>
-                            <button className="absolute -right-6 top-0 p-2 text-green-600 hover:text-green-700">
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Main Content Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        {/* Contact Information */}
-                        <div className="bg-white p-6 rounded-lg shadow relative">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Contact Information</h2>
-                                <button
-                                    onClick={() => setIsEditing({ ...isEditing, contact: !isEditing.contact })}
-                                    className="text-green-600 hover:text-green-700"
-                                >
-                                    <Edit2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                            {renderContactInfo()}
-                        </div>
-
-                        {/* Farm Details */}
-                        <div className="bg-white p-6 rounded-lg shadow relative">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-semibold">Farm Details</h2>
-                                <button
-                                    onClick={() => setIsEditing({ ...isEditing, farmDetails: !isEditing.farmDetails })}
-                                    className="text-green-600 hover:text-green-700"
-                                >
-                                    <Edit2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                            {renderFarmDetails()}
-                        </div>
-                    </div>
-
-                    {/* Recent Activity */}
-                    <div className="bg-white p-6 rounded-lg shadow mb-8">
-                        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+        <div className="min-h-screen bg-green-50 p-6 mt-16 pb-24">
+            <div className="max-w-4xl mx-auto">
+               {/* Profile Header */}
+<div className="bg-white rounded-xl shadow-lg p-3 mb-3">
+    <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-4">
+            <div className="relative">
+                <img
+                    src={farmer.profileImage ? getImageUrl(farmer.profileImage) : harvester}
+                    alt="Profile"
+                    className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 rounded-full object-cover border-2 sm:border-4 border-green-500"
+                />
+                <label className="absolute bottom-0 right-0 bg-green-600 rounded-full p-1.5 sm:p-2 cursor-pointer hover:bg-green-700 transition-colors">
+                    <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                    <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
+                </label>
+            </div>
+            <div>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{farmer.name}</h1>
+                <p className="text-sm sm:text-base text-gray-600">Farmer</p>
+            </div>
+        </div>
+        <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 sm:gap-2 text-red-500 hover:text-red-600 text-sm sm:text-base"
+        >
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+            Logout
+        </button>
+    </div>
+</div>
+                {/* Contact Information */}
+                <div className="max-w-4xl mx-auto">
+                    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+                        <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
                         <div className="space-y-4">
-                            {farmer.recentActivity.map((activity, index) => (
-                                <div key={index} className="flex items-start gap-4">
-                                    <div className="w-2 h-2 mt-2 rounded-full bg-green-600"></div>
+                                    <div className="flex items-center gap-3">
+                                        <Mail className="w-5 h-5 text-green-600" />
+                                        <span>{farmer.contact.email}</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <Phone className="w-5 h-5 text-green-600" />
+                                        <span>{farmer.contact.phone}</span>
+                                    </div>
+                                   
+                        
+                                    </div>
+                        </div>
+                      
+
+                {/* Farms Section */}
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-semibold">My Farms</h2>
+        <button
+                            onClick={() => setShowAddFarmModal(true)}
+                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+                            <Plus className="w-5 h-5" />
+                            Add New Farm
+        </button>
+    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {farmer?.farms?.map((farm, index) => (
+                            <div key={index} className="bg-green-50 rounded-lg p-6 border border-green-200">
+                                <h3 className="text-lg font-semibold text-green-800 mb-4">{farm.farmName}</h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-green-600" />
+                                        <span className="text-gray-700">{farm.farmLocationText || farm.farmLocation}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Wheat className="w-4 h-4 text-green-600" />
+                                        <span className="text-gray-700">{farm.farmSize} Acres</span>
+                                    </div>
                                     <div>
-                                        <p className="text-sm text-gray-500">{new Date(activity.date).toLocaleDateString()}</p>
-                                        <p className="text-gray-700">{activity.activity}</p>
+                                        <p className="text-sm text-gray-600 mb-2">Main Crops:</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {farm.mainCrops?.map((crop, cropIndex) => (
+                                                <span
+                                                    key={cropIndex}
+                                                    className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm"
+                                                >
+                                                    {crop}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
+                        ))}
+                    </div>
                         </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex gap-4 justify-center">
-                        <button className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            onClick={() => navigate("/register/company")}>
-                            Register as Company
-                        </button>
+          {/* Add Farm Modal */}
+{showAddFarmModal && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 overflow-hidden">
+        <div className="flex min-h-screen items-center justify-center p-2 sm:p-4 pb-20">
+            <div className="bg-white rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col my-2">
+                <div className="p-3 sm:p-6 border-b">
+                    <h2 className="text-xl sm:text-2xl font-bold">Add New Farm</h2>
+                </div>
+                
+                <div className="overflow-y-auto flex-1 p-3 sm:p-6">
+                    <form onSubmit={handleAddFarm} className="space-y-3 sm:space-y-4">
+                        <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                            <div className="space-y-3 sm:space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Farm Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newFarmData.farmName}
+                                        onChange={(e) => setNewFarmData({ ...newFarmData, farmName: e.target.value })}
+                                        className="w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                        required
+                                        minLength={2}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Farm Size (Acres)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={newFarmData.farmSize}
+                                        onChange={(e) => setNewFarmData({ ...newFarmData, farmSize: e.target.value })}
+                                        className="w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                        required
+                                        min="0"
+                                        step="0.1"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Main Crops (comma separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={newFarmData.mainCrops}
+                                        onChange={(e) => setNewFarmData({ ...newFarmData, mainCrops: e.target.value })}
+                                        className="w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                        required
+                                        placeholder="wheat, corn, rice"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Select Farm Location
+                                </label>
+                                <div className="h-[200px] sm:h-[300px] rounded-lg overflow-hidden border border-gray-300">
+                                    <MapContainer
+                                        center={[30.0444, 31.2357]}
+                                        zoom={6}
+                                        style={{ height: '100%', width: '100%' }}
+                                    >
+                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                        <LocationPicker onLocationSelect={handleLocationSelect} />
+                                        {selectedLocation && (
+                                            <Marker position={[selectedLocation.lat, selectedLocation.lng]} />
+                                        )}
+                                    </MapContainer>
+                                </div>
+                                {locationAddress && (
+                                    <p className="text-xs sm:text-sm text-green-600 mt-2">
+                                        Selected location: {locationAddress}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </form>
+                </div>
 
+                <div className="border-t p-3 sm:p-6">
+                    <div className="flex justify-end gap-2 sm:gap-4">
                         <button
-                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-                            onClick={() => navigate("/")}
+                            type="button"
+                            onClick={() => {
+                                setShowAddFarmModal(false);
+                                setSelectedLocation(null);
+                            }}
+                            className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-800"
                         >
-                            <LogOut className="w-4 h-4" />
-                            Log Out
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            onClick={handleAddFarm}
+                            className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        >
+                            Add Farm
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+)}
             </div>
         </div>
     );

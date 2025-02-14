@@ -4,44 +4,56 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { RegistrationOptions } from "./RegistrationOptions";
-import logoh from '/src/assets/images/logoh.png';
-import { loginUser } from "../../../utils/apiService";
+import logoh from "/src/assets/images/logoh.png";
+import { loginUser } from "../../utils/apiService";
 
 export function LoginForm() {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     emailOrPhone: "",
     password: "",
-    rememberMe: false
+    rememberMe: false,
   });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+  
     try {
       const data = await loginUser({
         email: credentials.emailOrPhone,
-        password: credentials.password
+        password: credentials.password,
       });
-
-      // Redirect based on user type from database
+  
+      // تخزين token و user كاملاً في localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user)); // تخزين الـ user كاملاً هنا
+  
+      // التوجيه بناءً على userType
       switch (data.user.userType) {
-        case 'farmer':
-          navigate('/farmer');
+        case "farmer":
+          navigate("/farmer");
           break;
-        case 'expert':
-          navigate('/expert');
+        case "expert":
+          navigate("/expert");
           break;
-        case 'company':
-          navigate('/company');
+        case "company":
+          navigate("/company");
           break;
         default:
-          setError('Unknown user type');
+          setError("نوع المستخدم غير معروف");
       }
     } catch (error) {
-      setError(error.message || 'Login failed. Please try again!.');
+      console.error("Login error:", error);
+      setError(error.message || "فشل تسجيل الدخول");
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -94,8 +106,12 @@ export function LoginForm() {
         </a>
       </div>
 
-      <Button type="submit" className="w-full">
-        Sign In
+      <Button type="submit" className="w-full flex justify-center items-center h-10">
+        {loading ? (
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white-500"></div>
+        ) : (
+          "Sign In"
+        )}
       </Button>
     </form>
   );

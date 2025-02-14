@@ -1,3 +1,69 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  animation: typing 2s steps(30) forwards;
+}
+
+/* Add content typing animation */
+.typewriter-content {
+  overflow: hidden;
+  border-right: 2px solid transparent;
+  white-space: pre-wrap;
+  width: 0;
+  animation: typing-content 2s steps(40, end) forwards;
+}
+
+@keyframes typing-content {
+  from { 
+    width: 0;
+    border-right-color: #22c55e; /* green-500 */
+  }
+  to { 
+    width: 100%;
+    border-right-color: transparent;
+  }
+}
+
+/* Update delays */
+.delay-1 { animation-delay: 0.3s; }
+.delay-2 { animation-delay: 0.8s; }
+.delay-3 { animation-delay: 1.3s; }
+.delay-4 { animation-delay: 1.8s; }
+
+/* Add animation for description text */
+.typewriter-multiline {
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Add staggered animation for treatment items */
+.treatment-item {
+  opacity: 0;
+  animation: slideIn 0.5s forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

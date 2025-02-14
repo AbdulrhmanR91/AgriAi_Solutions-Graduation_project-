@@ -1,106 +1,67 @@
-import PropTypes from 'prop-types';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import harvester from '/src/assets/images/harvester.png';
-import disease from '/src/assets/images/disease.png';
-import homeicon from '/src/assets/images/home.png';
+import { Link, useLocation } from 'react-router-dom';
+import { useFarmer } from '../../../hooks/useFarmer';
+import { getImageUrl } from '../../../utils/apiService';
+
+import home from '/src/assets/images/home.png';
+import wheat from '/src/assets/images/wheat.png';
+import user from '/src/assets/images/user.png';
 import market from '/src/assets/images/market.png';
-import engineer from '/src/assets/images/engineering.png';
+import conversation from '/src/assets/images/conversation.png';
 
-const BottomNavigation = ({ onTabChange }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [activeTab, setActiveTab] = useState('');
+const BottomNavigationFarmer = () => {
+    const location = useLocation();
+    const { farmer } = useFarmer();
 
-  // Update active tab based on current route  
-  useEffect(() => {
-    const path = location.pathname;
-    switch (path) {
-      case '/farmer/profile':
-        setActiveTab('profile');
-        break;
-      case '/farmer/trackplants':
-        setActiveTab('trackplants');
-        break;
-      case '/farmer':
-        setActiveTab('home');
-        break;
+    const getProfileImage = (imagePath) => {
+        if (!imagePath) return user;
+        return getImageUrl(imagePath);
+    };
 
-      case '/farmer/market':
-        setActiveTab('market');
-        break;
-      case '/farmer/Consult':
-        setActiveTab('consult');
-        break;
-      default:
-        setActiveTab('');
-        break;
-    }
-  }, [location]);
+    return (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50"> {/* Lower z-index */}
+            <div className="grid grid-cols-5 gap-1">
+                <Link to="/farmer/profile" className="flex flex-col items-center py-2">
+                    <div className="w-6 h-6 rounded-full overflow-hidden">
+                        <img 
+                            src={getProfileImage(farmer?.profileImage)} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <span className="text-xs mt-1 text-gray-600">Profile</span>
+                </Link>
 
-  // Function to handle both tab change and navigation
-  const handleTabChange = (tab) => {
-    if (tab === 'notification') {
-      setActiveTab(''); // No active tab for notification
-    } else {
-      setActiveTab(tab); // Update active tab state
-    }
-    onTabChange?.(tab); // Notify parent component of tab change if handler exists
-    
-    // Perform navigation with correct paths
-    switch (tab) {
-      case 'profile':
-        navigate('/farmer/profile');
-        break;
-      case 'trackplants':
-        navigate('/farmer/trackplants');
-        break;
-      case 'home':
-        navigate('/farmer');
-        break;
+                <Link to="/farmer/trackplants" className="flex flex-col items-center py-2">
+                    <div className="w-6 h-6">
+                        <img src={wheat} alt="Track Plants" className="w-full h-full" />
+                    </div>
+                    <span className="text-xs mt-1 text-gray-600">Track Plants</span>
+                </Link>
 
-      case 'market':
-        navigate('/farmer/market');
-        break;
-      case 'consult':
-        navigate('/farmer/Consult');
-        break;
-      default:
-        break;
-    }
-  };
+                <Link to="/farmer/home" className="flex flex-col items-center py-2">
+                    <div className="w-6 h-6">
+                        <img src={home} alt="Home" className="w-full h-full" />
+                    </div>
+                    <span className={`text-xs mt-1 ${location.pathname === '/farmer/home' ? 'text-green-600' : 'text-gray-600'}`}>Home</span>
+                    {location.pathname === '/farmer/home' && <div className="h-1 w-8 bg-green-600 absolute bottom-0"></div>}
+                </Link>
 
-  // Function to render a bottom navigation button
-  const renderBottomNavButton = (tab, iconSrc, label) => (
-    <button
-      className={`flex flex-col items-center ${
-        activeTab === tab ? 'text-green-600' : 'text-gray-500'
-      }`}
-      onClick={() => handleTabChange(tab)}
-    >
-      <img src={iconSrc} alt={`${label} Icon`} className="w-6 h-6" />
-      <span className="text-xs mt-1">{label}</span>
-      {activeTab === tab && (
-        <div className="h-1 w-8 bg-green-500 mt-1 rounded-full"></div>
-      )}
-    </button>
-  );
+                <Link to="/farmer/market" className="flex flex-col items-center py-2">
+                    <div className="w-6 h-6">
+                        <img src={market} alt="Market" className="w-full h-full" />
+                    </div>
+                    <span className="text-xs mt-1 text-gray-600">Market</span>
+                </Link>
 
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t z-10">
-      <div className="mx-auto grid grid-cols-5 py-4 px-2">
-        {renderBottomNavButton('profile', harvester, 'Profile')}
-        {renderBottomNavButton('trackplants', disease, 'Track Plants')}
-        {renderBottomNavButton('home', homeicon, 'Home')}
-        {renderBottomNavButton('market', market, 'Market')}
-        {renderBottomNavButton('consult', engineer, 'Consult')}
-      </div>
-    </nav>
-  );
+                <Link to="/farmer/consult" className="flex flex-col items-center py-2">
+                    <div className="w-6 h-6">
+                        <img src={conversation} alt="Consult" className="w-full h-full" />
+                    </div>
+                    <span className="text-xs mt-1 text-gray-600">Consult</span>
+                </Link>
+            </div>
+        </nav>
+    );
 };
 
-BottomNavigation.propTypes = {
-  onTabChange: PropTypes.func
-};
-
-export default BottomNavigation;
+export default BottomNavigationFarmer;

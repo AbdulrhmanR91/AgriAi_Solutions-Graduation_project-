@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { User, Mail, Lock, CheckSquare, GraduationCap, School, Briefcase, ListChecks } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import logo from '/src/assets/images/logor2.png';
-import { registerUser } from '../../../../utils/apiService';
+import { registerUser } from '../../../utils/apiService';
 import PropTypes from 'prop-types';
 import { toast } from 'react-hot-toast';
 
@@ -273,46 +273,63 @@ const ExpertRegistration = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // التحقق من الموافقة وملف الهوية
-        if (!formData.agreed || !formData.idFile) {
-            setErrors(prev => ({
-                ...prev,
-                agreed: !formData.agreed ? "You must agree to the terms and conditions" : "",
-                idFile: !formData.idFile ? "ID document is required" : ""
-            }));
-            toast.error('Please complete all required fields');
-            return;
-        }
-
-        // التحقق من جميع الحقول في الخطوة الأخيرة
-        const validationErrors = validateStep(3);
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-        
         try {
+            // التحقق من الموافقة وملف الهوية
+            if (!formData.agreed || !formData.idFile) {
+                setErrors(prev => ({
+                    ...prev,
+                    agreed: !formData.agreed ? "يجب الموافقة على الشروط والأحكام" : "",
+                    idFile: !formData.idFile ? "مستند الهوية مطلوب" : ""
+                }));
+                toast.error('يرجى إكمال جميع الحقول المطلوبة');
+                return;
+            }
+
+            // التحقق من جميع الحقول في الخطوة الأخيرة
+            const validationErrors = validateStep(3);
+            if (Object.keys(validationErrors).length > 0) {
+                setErrors(validationErrors);
+                return;
+            }
+            
+            // تجهيز بيانات التسجيل
             const userData = {
                 name: formData.name.trim(),
                 email: formData.email.trim(),
                 password: formData.password,
-                phone: formData.phone,
+                phone: formData.phone.trim(),
                 userType: 'expert',
                 expertDetails: {
                     expertAt: formData.expertAt.trim(),
                     university: formData.university.trim(),
                     college: formData.college.trim(),
-                    services: formData.services.split(',').map(s => s.trim()).filter(s => s).join(', ')
+                    services: formData.services.split(',')
+                        .map(s => s.trim())
+                        .filter(s => s.length >= 3) // التأكد من أن كل خدمة لها على الأقل 3 أحرف
                 }
             };
 
-            await registerUser(userData);
-            toast.success('Registration successful! Redirecting to login...');
+            // التحقق من وجود خدمة واحدة على الأقل
+            if (!userData.expertDetails.services.length) {
+                setErrors(prev => ({
+                    ...prev,
+                    services: "يجب إضافة خدمة واحدة على الأقل"
+                }));
+                toast.error('يرجى إضافة خدمة واحدة على الأقل');
+                return;
+            }
+
+
+            const response = await registerUser(userData);
+            console.log('Registration successful:', response);
+            
+            toast.success('تم التسجيل بنجاح! جاري التحويل إلى صفحة تسجيل الدخول...');
             setTimeout(() => {
                 navigate('/login');
             }, 2000);
         } catch (error) {
-            toast.error(error.message || 'Registration failed. Please try again.');
+            console.error('Registration error:', error);
+            toast.error(error.message || 'فشل في التسجيل. يرجى المحاولة مرة أخرى.');
         }
     };
 

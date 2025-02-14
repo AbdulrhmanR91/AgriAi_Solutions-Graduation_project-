@@ -7,15 +7,16 @@ import process from 'process';
 // تسجيل مستخدم جديد
 export const registerUser = async (req, res) => {
     try {
-        // التحقق من وجود البريد الإلكتروني
+        console.log('Received body:', req.body);
+        
         const existingUser = await User.findOne({ email: req.body.email });
         if (existingUser) {
             return res.status(400).json({
-                error: 'Email already registered. Please use a different email or try logging in.'
+                error: 'البريد الإلكتروني مسجل مسبقاً'
             });
         }
 
-        // إنشاء مستخدم جديد
+        // تجهيز بيانات المستخدم
         const userData = {
             name: req.body.name,
             email: req.body.email,
@@ -24,28 +25,42 @@ export const registerUser = async (req, res) => {
             userType: req.body.userType
         };
 
-        // إضافة تفاصيل الشركة إذا كان نوع المستخدم شركة
-        if (req.body.userType === 'company') {
-            userData.companyDetails = {
-                companyName: req.body.companyDetails.companyName,
-                businessAddress: req.body.companyDetails.businessAddress,
-                governorate: req.body.companyDetails.governorate,
-                tradeLicenseNumber: req.body.companyDetails.tradeLicenseNumber,
-                taxRegistrationNumber: req.body.companyDetails.taxRegistrationNumber,
-                location: req.body.companyDetails.location
+        // إضافة تفاصيل المزرعة إذا كان نوع المستخدم مزارع
+        if (req.body.userType === 'farmer') {
+            userData.farmDetails = {
+                farmName: req.body.farmDetails.farmName,
+                farmLocation: req.body.farmDetails.farmLocation,
+                farmSize: req.body.farmDetails.farmSize,
+                crops: req.body.farmDetails.crops
             };
         }
+
+        console.log('Creating user with data:', userData);
 
         const user = new User(userData);
         await user.save();
         
+        // تنسيق البيانات المُرجعة
+        const userResponse = {
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            userType: user.userType,
+            farmDetails: user.farmDetails,
+            _id: user._id
+        };
+        
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
-        res.status(201).send({ user, token });
+        
+        res.status(201).json({ 
+            user: userResponse, 
+            token 
+        });
     } catch (error) {
         console.error('Registration error:', error);
-        res.status(400).send({ 
+        res.status(400).json({ 
             error: error.code === 11000 
-                ? 'This email is already registered' 
+                ? 'هذا البريد الإلكتروني مسجل مسبقاً' 
                 : error.message 
         });
     }

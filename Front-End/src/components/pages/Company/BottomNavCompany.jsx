@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
+import { getCompanyProfile } from '../../../utils/apiService';
 import profileIcon from '/src/assets/images/company.png';
 import marketIcon from '/src/assets/images/market.png';
 import homeIcon from '/src/assets/images/home.png';
@@ -10,12 +11,33 @@ const BottomNavigation = ({ onTabChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+
+  const BASE_URL = 'https://dark-gennifer-abdulrhman-5d081501.koyeb.app';
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return profileIcon;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${BASE_URL}${imagePath}`;
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await getCompanyProfile();
+        setProfileImage(getImageUrl(profile.profileImage));
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   // Navigation items configuration
   const navigationItems = useMemo(() => [
     {
       tab: 'profile',
-      icon: profileIcon,
+      icon: profileImage || profileIcon,
       label: 'Profile',
       path: '/company/profile'
     },
@@ -37,7 +59,7 @@ const BottomNavigation = ({ onTabChange }) => {
       label: 'Orders',
       path: '/company/orders'
     }
-  ], []);
+  ], [profileImage]);
 
   // Update active tab based on current route
   useEffect(() => {
@@ -68,7 +90,7 @@ const BottomNavigation = ({ onTabChange }) => {
       <img 
         src={item.icon} 
         alt={`${item.label} Icon`} 
-        className="w-6 h-6 mb-1"
+        className={`w-6 h-6 mb-1 ${item.tab === 'profile' ? 'rounded-full object-cover' : ''}`}
       />
       <span className="text-xs">{item.label}</span>
       {activeTab === item.tab && (
@@ -79,19 +101,19 @@ const BottomNavigation = ({ onTabChange }) => {
 
   return (
     <>
-    <div className="pb-20" />
-    <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200">
-      <div className="max-w-screen-xl mx-auto grid grid-cols-4 py-4 px-4">
-        {navigationItems.map(item => renderNavButton(item))}
-      </div>
-    </nav>
-
+      <div className="pb-20" />
+      <nav className="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+        <div className="max-w-screen-xl mx-auto grid grid-cols-4 py-4 px-4">
+          {navigationItems.map(item => renderNavButton(item))}
+        </div>
+      </nav>
     </>
   );
 };
 
 BottomNavigation.propTypes = {
   onTabChange: PropTypes.func.isRequired,
+  currentUser: PropTypes.object
 };
-
 export default BottomNavigation;
+

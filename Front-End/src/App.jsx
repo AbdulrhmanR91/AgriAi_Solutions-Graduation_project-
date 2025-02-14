@@ -13,7 +13,6 @@ import Market from "./components/pages/Farmer/Market";
 import NotificationsPage from "./components/pages/Farmer/Notification";
 import CompanyHomePage from "./components/pages/Company/CompanyHomePage";
 import CompanyProfile from "./components/pages/Company/profile";
-import MarketplaceCPage from "./components/pages/Company/MarketC";
 import NotificationsCPage from "./components/pages/Company/Notification";
 import CartPage from "./components/pages/Farmer/cart and favourite";
 import Consult from "./components/pages/Farmer/consult";
@@ -28,80 +27,118 @@ import PlantTrackingPageE from "./components/pages/Experts/trackplantsE";
 import BottomNavigationE from "./components/pages/Experts/botttomNavE";
 import Jobs from "./components/pages/Experts/jobs";
 import NotificationsPageE from "./components/pages/Experts/notificationE";
+import FarmerProvider from './context/FarmerProvider';
+import Orders from './components/pages/Farmer/Orders';
+import CompanyProvider  from './context/CompanyProvider';
+import CombinedProvider from './context/CombinedProvider';
+import ProtectedRoute from './components/pages/Protected Route';
+import { UserProvider } from './context/UserContext';
+import SavedAnalyses from './components/pages/Farmer/savedanalyses';
+import SavedAnalysess from './components/pages/Experts/saved-analyses';
 
 const App = () => {
   return (
-    <>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            theme: {
-              primary: '#4CAF50',
-            },
-          },
-          error: {
-            duration: 4000,
-            theme: {
-              primary: '#f44336',
-            },
-          },
-        }}
-      />
+    <UserProvider>
+      <Toaster position="top-center" />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register/farmer" element={<FarmerRegistration />} />
         <Route path="/register/expert" element={<ExpertRegistration />} />
         <Route path="/register/company" element={<CompanyRegistration />} />
-        <Route path="/farmer/*" element={<FarmerRoutes />} />
-        <Route path="/company/*" element={<CompanyRoutes />} />
-        <Route path="/expert/*" element={<ExpertRoutes />} />
+        <Route path="/farmer/*" element={
+          <ProtectedRoute>
+            <FarmerRoutes />
+          </ProtectedRoute>
+        } />
+        <Route path="/company/*" element={
+          <ProtectedRoute>
+            <CompanyRoutes />
+          </ProtectedRoute>
+        } />
+        <Route path="/expert/*" element={
+          <ProtectedRoute>
+            <ExpertRoutes />
+          </ProtectedRoute>
+        } />
+        <Route path="/market" element={
+          <ProtectedRoute>
+            <CombinedProvider>
+              <Market />
+            </CombinedProvider>
+          </ProtectedRoute>
+        } />
+        <Route path="/cart" element={
+          <ProtectedRoute>
+            <CartPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/orders" element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        } />
+        <Route path="/farmer/market" element={
+          <ProtectedRoute>
+            <CombinedProvider>
+              <Market />
+            </CombinedProvider>
+          </ProtectedRoute>
+        } />
+        <Route path="/company/market" element={
+          <ProtectedRoute>
+            <CombinedProvider>
+              <Market />
+            </CombinedProvider>
+          </ProtectedRoute>
+        } />
       </Routes>
-    </>
+    </UserProvider>
   );
 };
 
 const FarmerRoutes = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<FarmerHomePage />} />
-        <Route path="/profile" element={<FarmerProfile />} />
-        <Route path="/trackplants" element={<PlantTrackingPage />} />
-        <Route path="/market" element={<Market />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/Consult" element={<Consult />} />
-        <Route path="/my-products" element={<MyProducts />} />
-
-
-      </Routes>
-      <BottomNavigationFarmer />
-    </>
+    <FarmerProvider>
+      <>
+        <Routes>
+          <Route path="/" element={<FarmerHomePage />} />
+          <Route path="/home" element={<FarmerHomePage />} />
+          <Route path="/profile" element={<FarmerProfile />} />
+          <Route path="/trackplants" element={<PlantTrackingPage />} />
+          <Route path="/saved-analyses" element={<SavedAnalyses />} /> {/* Add this line */}
+          <Route path="/market" element={<Market />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/Consult" element={<Consult />} />
+          <Route path="/my-products" element={<MyProducts />} />
+          <Route path="/orders" element={<Orders />} />
+        </Routes>
+        <BottomNavigationFarmer />
+      </>
+    </FarmerProvider>
   );
 };
 
 const CompanyRoutes = () => {
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<CompanyHomePage />} />
-        <Route path="/profile" element={<CompanyProfile />} />
-        <Route path="/market" element={<MarketplaceCPage />} />
-        <Route path="/notifications" element={<NotificationsCPage />} />
-        <Route path="/cart" element={<Cartcompany />} />
-        <Route path="/my-products" element={<MyProductcompany />} />
-        <Route path="/orders" element={<OrdersPage />} />
-      </Routes>
-      
-    </>
+    <CompanyProvider>
+      <>
+        <Routes>
+          <Route path="/" element={<CompanyHomePage />} />
+          <Route path="/profile" element={<CompanyProfile />} />
+          <Route path="/notifications" element={<NotificationsCPage />} />
+          <Route path="/cart" element={<Cartcompany />} />
+          <Route path="/my-products" element={<MyProductcompany />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/market" element={
+            <CombinedProvider>
+              <Market />
+            </CombinedProvider>
+          } />
+        </Routes>
+      </>
+    </CompanyProvider>
   );
 };
 
@@ -115,6 +152,7 @@ const ExpertRoutes = () => {
         <Route path="/trackplants" element={<PlantTrackingPageE />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/notifications" element={<NotificationsPageE />} />
+        <Route path="/savedanalyses" element={<SavedAnalysess />} /> {/* Add this line */}
       </Routes>
       <BottomNavigationE />
     </>

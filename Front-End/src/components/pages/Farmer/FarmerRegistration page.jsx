@@ -10,8 +10,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import logo from "/src/assets/images/logor2.png";
-import { registerUser } from "../../../../utils/apiService";
-import { Toast } from "../../ui/Toast";
+import { registerUser } from "../../../utils/apiService";
+import { Toast } from "../Toast";
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -319,6 +319,12 @@ const validateConfirmPassword = (confirmPassword) => {
 
     setIsSubmitting(true);
     try {
+        // تنظيف وتنسيق البيانات
+        const mainCrops = formData.crops
+            .split(',')
+            .map(crop => crop.trim())
+            .filter(crop => crop.length > 0);
+
         const userData = {
             name: formData.name.trim(),
             email: formData.email.trim(),
@@ -328,17 +334,22 @@ const validateConfirmPassword = (confirmPassword) => {
             farmDetails: {
                 farmName: formData.farmName.trim(),
                 farmLocation: formData.farmLocation,
-                farmSize: Number(formData.farmSize),
-                crops: formData.crops.trim()
+                farmSize: parseFloat(formData.farmSize),
+                mainCrops: mainCrops
             }
         };
 
-        await registerUser(userData);
-        toast.success("Registration successful!");
-        navigate("/login");
+        const response = await registerUser(userData);
+
+        if (response && response.token) {
+            toast.success("Registration successful!");
+            navigate("/login");
+        } else {
+            throw new Error(response?.message || 'Registration failed');
+        }
     } catch (error) {
         console.error('Registration error:', error);
-        toast.error(error.error || "Registration failed");
+        toast.error(error.response?.data?.message || error.message || "Registration failed");
     } finally {
         setIsSubmitting(false);
     }

@@ -1,21 +1,24 @@
 import React from 'react';
 
-const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-lg shadow-md p-4 ${className}`}>
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const Card: React.FC<CardProps> = ({ children, className = '' }) => (
+  <div className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}>
     {children}
   </div>
 );
 
-const CardHeader = ({ children, className = '' }) => (
-  <div className={`mb-4 ${className}`}>
+export const CardHeader: React.FC<CardProps> = ({ children, className = '' }) => (
+  <div className={`p-4 border-b border-gray-200 ${className}`}>
     {children}
   </div>
 );
 
-const CardContent = ({ children, className = '' }) => (
-  <div className={className}>
+export const CardContent: React.FC<CardProps> = ({ children, className = '' }) => (
+  <div className={`p-4 ${className}`}>
     {children}
   </div>
 );
-
-export { Card, CardHeader, CardContent };
