@@ -2,7 +2,7 @@
 
 > Revolutionizing Egyptian agriculture through AI-powered solutions 🚀
 
-**[Try our platform ➡️ agriai-nu.vercel.app](https://agriai-nu.vercel.app/)**
+**[Try our platform ➡️ Agri Ai solutions](https://agriai-ten.vercel.app/)**
 
 ## 🎯 Overview
 Transform farming with our comprehensive platform offering:
