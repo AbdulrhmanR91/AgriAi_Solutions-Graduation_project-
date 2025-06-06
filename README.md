@@ -70,5 +70,5 @@ Leading Egypt's agricultural revolution through:
 <div align="center">
 Made with 💚 for Egyptian Agriculture
 
-[Visit AgriAI](https://agriai-nu.vercel.app/)
+[Visit AgriAI](https://agriai-ten.vercel.app/)
 </div>
