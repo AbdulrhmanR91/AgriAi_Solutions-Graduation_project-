@@ -1,4 +1,4 @@
-# 🌾 Smart Agricultural Platform
+# 🌾 Agri AI Solutions Smart Agricultural Platform
 
 > Revolutionizing Egyptian agriculture through AI-powered solutions 🚀
 
