@@ -4,7 +4,7 @@ import { registerUser, loginUser } from '../controllers/userController.js';
 import auth from '../middleware/auth.js';
 import multer from 'multer';
 import User from '../models/User.js';
-
+import authMiddleware from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 const storage = multer.diskStorage({
@@ -55,7 +55,7 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
             req.user.id,
             { profileImage: imageUrl },
             { new: true }
-        );
+        ).select('-password');
 
         if (!updatedUser) {
             return res.status(404).json({
@@ -66,7 +66,8 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
 
         res.json({
             success: true,
-            imageUrl: imageUrl
+            imageUrl: imageUrl,
+            message: 'Profile image updated successfully'
         });
     } catch (error) {
         console.error('Error uploading image:', error);
@@ -78,4 +79,24 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
     }
 });
 
-export default router; 
+// Get current user's information
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id).select('-password');
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error fetching user information' 
+        });
+    }
+});
+
+export default router;

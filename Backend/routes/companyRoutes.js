@@ -4,12 +4,10 @@ import User from '../models/User.js';
 
 const router = Router();
 
-// الحصول على بيانات الشركة من جدول users
 router.get('/profile', auth, async (req, res) => {
     try {
         console.log('Getting company profile for user:', req.user.id);
         
-        // البحث في جدول users
         const user = await User.findOne({
             _id: req.user.id,
             userType: 'company'
@@ -22,7 +20,6 @@ router.get('/profile', auth, async (req, res) => {
             });
         }
 
-        // تنسيق البيانات من جدول users بشكل كامل
         const formattedCompany = {
             name: user.name,
             email: user.email,
@@ -53,7 +50,6 @@ router.get('/profile', auth, async (req, res) => {
     }
 });
 
-// تحديث بيانات الشركة في جدول users
 router.put('/profile', auth, async (req, res) => {
     try {
         console.log('Received update data:', req.body);
@@ -84,7 +80,6 @@ router.put('/profile', auth, async (req, res) => {
             });
         }
 
-        // تنسيق البيانات قبل إرجاعها
         const formattedCompany = {
             name: updatedUser.name,
             email: updatedUser.email,

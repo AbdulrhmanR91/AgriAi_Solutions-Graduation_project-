@@ -15,7 +15,6 @@ const favoriteSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// إضافة index للتأكد من عدم تكرار المفضلة
 favoriteSchema.index({ user: 1, product: 1 }, { unique: true });
 
 const Favorite = mongoose.model('Favorite', favoriteSchema);

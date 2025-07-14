@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware  # استيراد CORS Middleware
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import numpy as np
 import io
@@ -8,10 +8,9 @@ import base64
 
 app = FastAPI()
 
-# ⚡ تمكين CORS لحل المشكلة
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # السماح لجميع النطاقات، يمكنك تحديد نطاق معين ["http://localhost:5173"]
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,6 +33,8 @@ classes = [
     'Tomato___Tomato_mosaic_virus', 'Tomato___healthy'
 ]
 
+allowed_keywords = ["Tomato", "Potato", "Corn"]
+
 def preprocess_image(image):
     image = image.resize((224, 224))
     image = np.array(image)
@@ -49,19 +50,19 @@ def home():
 async def predict(file: UploadFile = File(...)):
     contents = await file.read()
     image = Image.open(io.BytesIO(contents))
-    
-    # معالجة الصورة والتنبؤ
+
     processed_image = preprocess_image(image)
     prediction = model.predict(processed_image)
     predicted_class_index = np.argmax(prediction, axis=1)[0]
     predicted_class_name = classes[predicted_class_index]
-    
-    # تحويل الصورة إلى سلسلة مشفرة بصيغة base64
+
+    if not any(allowed in predicted_class_name for allowed in allowed_keywords):
+        predicted_class_name = "unknown"
+
     buffered = io.BytesIO()
     image.save(buffered, format="JPEG")
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
-    
-    # إرجاع النتيجة كنص والصورة مشفرة بشكل منفصل في JSON
+
     return {
         "prediction": predicted_class_name,
         "image": img_str

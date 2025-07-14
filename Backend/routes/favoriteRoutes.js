@@ -5,13 +5,11 @@ import Product from '../models/productModel.js';
 
 const router = express.Router();
 
-// إضافة/إزالة من المفضلة
 router.post('/', auth, async (req, res) => {
     try {
         const { productId } = req.body;
         console.log('Toggle favorite for product:', productId, 'user:', req.user.id);
         
-        // التحقق من وجود المنتج
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({
@@ -20,7 +18,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // البحث عن المفضلة
         const existingFavorite = await Favorite.findOne({
             user: req.user.id,
             product: productId
@@ -29,7 +26,6 @@ router.post('/', auth, async (req, res) => {
         console.log('Existing favorite:', existingFavorite);
 
         if (existingFavorite) {
-            // إزالة من المفضلة
             await existingFavorite.deleteOne();
             console.log('Removed from favorites');
             return res.json({
@@ -40,7 +36,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // إضافة للمفضلة
         const favorite = new Favorite({
             user: req.user.id,
             product: productId
@@ -65,7 +60,6 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// الحصول على المفضلة
 router.get('/', auth, async (req, res) => {
     try {
         console.log('Getting favorites for user:', req.user.id);

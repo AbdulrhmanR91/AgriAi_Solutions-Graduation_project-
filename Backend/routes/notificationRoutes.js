@@ -5,7 +5,6 @@ import Notification from '../models/notificationModel.js';
 
 const router = express.Router();
 
-// جلب الإشعارات الخاصة بالمستخدم الحالي فقط
 router.get('/', auth, async (req, res) => {
     try {
         console.log('Fetching notifications for user:', req.user.id);
@@ -38,7 +37,6 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// جلب عدد الإشعارات غير المقروءة
 router.get('/unread-count', auth, async (req, res) => {
     try {
         const count = await Notification.countDocuments({
@@ -59,7 +57,6 @@ router.get('/unread-count', auth, async (req, res) => {
     }
 });
 
-// تحديث حالة القراءة للإشعارات الخاصة بالمستخدم الحالي فقط
 router.patch('/mark-as-read', auth, async (req, res) => {
     try {
         await Notification.updateMany(
@@ -83,7 +80,6 @@ router.patch('/mark-as-read', auth, async (req, res) => {
     }
 });
 
-// حذف كل إشعارات المستخدم
 router.delete('/clear-all', auth, async (req, res) => {
     try {
         await Notification.deleteMany({ 
@@ -103,7 +99,6 @@ router.delete('/clear-all', auth, async (req, res) => {
     }
 });
 
-// تحديث حالة القراءة لإشعار واحد
 router.patch('/:notificationId/read', auth, async (req, res) => {
     try {
         const { notificationId } = req.params;
@@ -165,7 +160,6 @@ router.patch('/:notificationId/read', auth, async (req, res) => {
     }
 });
 
-// حذف إشعار محدد
 router.delete('/:notificationId', auth, async (req, res) => {
     try {
         const notification = await Notification.findOneAndDelete({
@@ -193,14 +187,13 @@ router.delete('/:notificationId', auth, async (req, res) => {
     }
 });
 
-// جلب إشعارات الخبير
 router.get('/expert', auth, async (req, res) => {
     try {
         console.log('Fetching expert notifications for user:', req.user.id);
         
         const notifications = await Notification.find({ 
             recipient: req.user.id,
-            type: 'consultOrder'
+            type: { $in: ['consultOrder', 'rating'] } 
         })
             .populate('from', 'name profileImage')
             .populate({

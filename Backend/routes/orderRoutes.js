@@ -8,7 +8,6 @@ import process from 'process';
 
 const router = express.Router();
 
-// مسارات الاختبار
 router.get('/test', (req, res) => {
     res.json({ 
         message: 'مسار الطلبات يعمل',
@@ -16,7 +15,6 @@ router.get('/test', (req, res) => {
     });
 });
 
-// مسار لاختبار التوثيق
 router.get('/test-auth', auth, (req, res) => {
     res.json({ 
         message: 'تم التحقق من التوثيق بنجاح',
@@ -28,7 +26,6 @@ router.get('/test-auth', auth, (req, res) => {
     });
 });
 
-// مسار لاختبار الاتصال بقاعدة البيانات
 router.get('/test-db', async (req, res) => {
     try {
         const ordersCount = await Order.countDocuments();
@@ -49,7 +46,6 @@ router.get('/test-db', async (req, res) => {
     }
 });
 
-// إنشاء طلب جديد
 router.post('/', auth, async (req, res) => {
     try {
         console.log('=== بداية معالجة الطلب ===');
@@ -58,7 +54,6 @@ router.post('/', auth, async (req, res) => {
         
         const { product: productId, quantity, totalPrice, shippingDetails } = req.body;
         
-        // التحقق من البيانات المطلوبة
         if (!productId || !quantity || !totalPrice || !shippingDetails) {
             console.log('بيانات مفقودة:', { productId, quantity, totalPrice, shippingDetails });
             return res.status(400).json({
@@ -67,7 +62,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من صحة القيم العددية
         const numericQuantity = Number(quantity);
         const numericPrice = Number(totalPrice);
 
@@ -85,7 +79,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من تفاصيل الشحن
         const { fullName, phone, address, city } = shippingDetails;
         if (!fullName?.trim() || !phone?.trim() || !address?.trim() || !city?.trim()) {
             console.log('تفاصيل شحن غير مكتملة:', shippingDetails);
@@ -95,7 +88,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من صحة رقم الهاتف
         const phoneRegex = /^01[0125][0-9]{8}$/;
         if (!phoneRegex.test(phone)) {
             return res.status(400).json({
@@ -104,7 +96,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // جلب المنتج مع معلومات البائع
         console.log('جلب المنتج:', productId);
         const productDoc = await Product.findById(productId).populate('seller');
         
@@ -116,7 +107,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من أن المشتري ليس هو البائع
         if (productDoc.seller._id.toString() === req.user._id.toString()) {
             console.log('محاولة شراء منتج خاص:', {
                 seller: productDoc.seller._id,
@@ -128,7 +118,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من الكمية المتوفرة
         if (productDoc.quantity < numericQuantity) {
             console.log('الكمية غير متوفرة:', {
                 requested: numericQuantity,
@@ -141,7 +130,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من السعر
         const expectedPrice = productDoc.price * numericQuantity;
         if (Math.abs(expectedPrice - numericPrice) > 0.01) {
             console.log('السعر غير صحيح:', {
@@ -155,7 +143,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // إنشاء الطلب
         const order = new Order({
             product: productId,
             seller: productDoc.seller._id,
@@ -171,7 +158,6 @@ router.post('/', auth, async (req, res) => {
             }
         });
 
-        // حفظ الطلب وتحديث كمية المنتج في معاملة واحدة
         const session = await mongoose.startSession();
         session.startTransaction();
 
@@ -185,7 +171,6 @@ router.post('/', auth, async (req, res) => {
                 { session, new: true }
             );
 
-            // إنشاء إشعار للبائع
             await createNotification({
                 recipient: productDoc.seller._id,
                 from: req.user.id,
@@ -197,7 +182,6 @@ router.post('/', auth, async (req, res) => {
             await session.commitTransaction();
             console.log('تم حفظ الطلب وتحديث المنتج بنجاح');
 
-            // جلب الطلب مع البيانات المرتبطة
             const populatedOrder = await Order.findById(order._id)
                 .populate('product')
                 .populate('buyer', 'name profileImage')
@@ -224,7 +208,6 @@ router.post('/', auth, async (req, res) => {
             stack: error.stack
         });
         
-        // معالجة أخطاء التحقق من Mongoose
         if (error.name === 'ValidationError') {
             const errors = Object.values(error.errors).map(err => err.message);
             return res.status(400).json({
@@ -234,7 +217,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // معالجة أخطاء المعرف غير الصالح
         if (error.name === 'CastError') {
             return res.status(400).json({
                 success: false,
@@ -255,7 +237,6 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// الحصول على طلبات المستخدم
 router.get('/my-orders', auth, async (req, res) => {
     try {
         const orders = await Order.find({ buyer: req.user._id })
@@ -277,7 +258,6 @@ router.get('/my-orders', auth, async (req, res) => {
     }
 });
 
-// الحصول على الطلبات الواردة للبائع
 router.get('/seller-orders', auth, async (req, res) => {
     try {
         const orders = await Order.find({ seller: req.user._id })
@@ -299,7 +279,6 @@ router.get('/seller-orders', auth, async (req, res) => {
     }
 });
 
-// تحديث حالة الطلب
 router.put('/:orderId/status', auth, async (req, res) => {
     try {
         const { status } = req.body;
@@ -313,7 +292,6 @@ router.put('/:orderId/status', auth, async (req, res) => {
             });
         }
 
-        // التحقق من أن المستخدم هو البائع
         if (order.seller.toString() !== req.user._id.toString()) {
             return res.status(403).json({
                 success: false,
@@ -324,7 +302,6 @@ router.put('/:orderId/status', auth, async (req, res) => {
         order.status = status;
         await order.save();
 
-        // إنشاء إشعار للمشتري
         await createNotification({
             recipient: order.buyer,
             type: 'order_status_update',
@@ -354,7 +331,6 @@ router.put('/:orderId/status', auth, async (req, res) => {
     }
 });
 
-// جلب عدد الطلبات الجديدة
 router.get('/new-count', auth, async (req, res) => {
     try {
         const count = await Order.countDocuments({

@@ -1,0 +1,25 @@
+/* Import Tajawal font for Arabic text */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap');
+
+/* Apply Tajawal font to Arabic text */
+html[lang="ar"] body,
+html[lang="ar"] * {
+  font-family: 'Tajawal', sans-serif !important;
+}
+
+/* Optional - adjust specific font weights if needed */
+html[lang="ar"] .font-bold {
+  font-weight: 700;
+}
+
+html[lang="ar"] .font-semibold {
+  font-weight: 600;
+}
+
+html[lang="ar"] .font-medium {
+  font-weight: 500;
+}
+
+html[lang="ar"] .font-light {
+  font-weight: 300;
+}

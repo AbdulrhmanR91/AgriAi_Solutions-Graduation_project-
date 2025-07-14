@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['order', 'message', 'consultOrder', 'system', 'cart', 'favorite', 'order_status_update'],
+        enum: ['order', 'message', 'consultOrder', 'system', 'cart', 'favorite', 'order_status_update', 'rating', 'consultCompleted'],
         required: true
     },
     message: {
@@ -23,6 +23,14 @@ const notificationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order'
     },
+    status: {
+        type: String,
+        default: null
+    },
+    metadata: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+    },
     isRead: {
         type: Boolean,
         default: false
@@ -31,7 +39,6 @@ const notificationSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// إضافة فهارس للبحث السريع
 notificationSchema.index({ recipient: 1, createdAt: -1 });
 notificationSchema.index({ recipient: 1, isRead: 1 });
 notificationSchema.index({ recipient: 1, type: 1 });

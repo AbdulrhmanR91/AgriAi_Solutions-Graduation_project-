@@ -5,13 +5,11 @@ import Product from '../models/productModel.js';
 
 const router = express.Router();
 
-// إضافة منتج للسلة
 router.post('/', auth, async (req, res) => {
     try {
         const { productId, quantity } = req.body;
         console.log('Adding to cart:', { productId, quantity, userId: req.user.id });
 
-        // التحقق من وجود المنتج
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({
@@ -20,7 +18,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // التحقق من أن المستخدم ليس مالك المنتج
         if (product.seller.toString() === req.user.id) {
             return res.status(400).json({
                 success: false,
@@ -28,7 +25,6 @@ router.post('/', auth, async (req, res) => {
             });
         }
 
-        // إضافة أو تحديث العنصر في السلة
         let cartItem = await CartItem.findOne({
             user: req.user.id,
             product: productId
@@ -46,7 +42,6 @@ router.post('/', auth, async (req, res) => {
 
         await cartItem.save();
         
-        // إرجاع العنصر مع بيانات المنتج كاملة
         const populatedItem = await CartItem.findById(cartItem._id)
             .populate({
                 path: 'product',
@@ -71,7 +66,6 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
-// الحصول على محتويات السلة
 router.get('/', auth, async (req, res) => {
     try {
         console.log('Getting cart for user:', req.user.id);
@@ -101,7 +95,6 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// حذف منتج من السلة
 router.delete('/:itemId', auth, async (req, res) => {
     try {
         const cartItem = await CartItem.findById(req.params.itemId);

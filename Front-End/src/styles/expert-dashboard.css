@@ -1,0 +1,356 @@
+/* Modern Expert Dashboard Styles */
+
+/* Glass morphism effects */
+.expert-glass-effect {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+/* Expert specific gradient backgrounds */
+.expert-gradient-bg {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* Expert stat cards */
+.expert-stat-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expert-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(34, 197, 94, 0.2);
+  background: rgba(255, 255, 255, 1);
+}
+
+.expert-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.expert-stat-card:hover::before {
+  left: 100%;
+}
+
+.expert-stat-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.expert-stat-card:hover .expert-stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, #bbf7d0, #86efac);
+}
+
+.expert-stat-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+/* Expert navigation styles */
+.expert-nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 60px;
+  overflow: hidden;
+}
+
+.expert-nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+  border-radius: 0 0 10px 10px;
+}
+
+.expert-nav-item.active::before {
+  width: 80%;
+}
+
+.expert-nav-item:hover {
+  transform: translateY(-2px);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.expert-nav-item.active {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.expert-nav-icon-container {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  transition: all 0.3s ease;
+  margin-bottom: 4px;
+}
+
+.expert-nav-item:hover .expert-nav-icon-container {
+  transform: scale(1.1);
+}
+
+.expert-nav-item.active .expert-nav-icon-container {
+  transform: scale(1.15);
+}
+
+.expert-nav-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.expert-nav-item:hover .expert-nav-icon {
+  filter: drop-shadow(0 4px 8px rgba(34, 197, 94, 0.3));
+}
+
+.expert-nav-item.active .expert-nav-icon {
+  filter: drop-shadow(0 4px 12px rgba(34, 197, 94, 0.5));
+}
+
+.expert-nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  transition: all 0.3s ease;
+}
+
+.expert-nav-item:hover .expert-nav-label {
+  color: #22c55e !important;
+  transform: scale(1.05);
+}
+
+.expert-nav-item.active .expert-nav-label {
+  color: #16a34a !important;
+  font-weight: 600;
+}
+
+/* Expert profile container */
+.expert-profile-container {
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: linear-gradient(45deg, #22c55e, #16a34a) padding-box, 
+              linear-gradient(45deg, #22c55e, #16a34a) border-box;
+  transition: all 0.3s ease;
+}
+
+.expert-nav-item:hover .expert-profile-container {
+  border-color: #22c55e;
+  transform: rotate(5deg);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.expert-nav-item.active .expert-profile-container {
+  border-color: #16a34a;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+}
+
+/* Expert floating animations */
+@keyframes expertFloat {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+  66% {
+    transform: translateY(-8px) rotate(-3deg);
+  }
+}
+
+.expert-floating-particle {
+  animation: expertFloat 5s ease-in-out infinite;
+}
+
+.expert-floating-particle:nth-child(2) {
+  animation-delay: 1.5s;
+}
+
+.expert-floating-particle:nth-child(3) {
+  animation-delay: 3s;
+}
+
+/* Expert gradient text */
+.expert-gradient-text {
+  background: linear-gradient(-45deg, #22c55e, #16a34a, #15803d, #166534);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: expertGradientShift 4s ease infinite;
+}
+
+@keyframes expertGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Expert slide animations */
+.expert-slide-up {
+  animation: expertSlideUp 0.8s ease-out forwards;
+}
+
+.expert-slide-up-delay-1 {
+  animation: expertSlideUp 0.8s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.expert-slide-up-delay-2 {
+  animation: expertSlideUp 0.8s ease-out forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+.expert-slide-up-delay-3 {
+  animation: expertSlideUp 0.8s ease-out forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
+}
+
+@keyframes expertSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Expert responsive design */
+@media (max-width: 480px) {
+  .expert-nav-item {
+    padding: 6px 3px;
+    min-height: 56px;
+  }
+  
+  .expert-nav-label {
+    font-size: 9px;
+  }
+  
+  .expert-nav-icon-container {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .expert-stat-card {
+    padding: 16px;
+  }
+  
+  .expert-stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .expert-nav-item {
+    padding: 4px 2px;
+    min-height: 50px;
+  }
+  
+  .expert-nav-label {
+    font-size: 8px;
+  }
+  
+  .expert-nav-icon-container {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .expert-stat-card {
+    padding: 12px;
+  }
+}
+
+/* Expert pulse effect for important elements */
+.expert-pulse {
+  animation: expertPulse 2s ease-in-out infinite;
+}
+
+@keyframes expertPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Expert button hover effects */
+.expert-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.expert-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.expert-button:hover::before {
+  left: 100%;
+}
+
+/* Expert text shadow effects */
+.expert-text-shadow {
+  text-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+}
+
+.expert-text-glow {
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5), 0 0 20px rgba(34, 197, 94, 0.3);
+}

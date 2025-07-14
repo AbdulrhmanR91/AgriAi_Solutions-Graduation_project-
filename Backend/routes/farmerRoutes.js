@@ -6,7 +6,6 @@ import User from '../models/User.js';
 
 const router = Router();
 
-// إعداد multer لرفع الصور
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'uploads/profiles/');
@@ -19,11 +18,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// مسارات الملف الشخصي للمزارع
 router.get('/profile', auth, getFarmerProfile);
 router.put('/profile', auth, updateFarmerProfile);
 
-// مسار إضافة مزرعة جديدة
 router.post('/farms', auth, async (req, res) => {
     try {
         const farmer = await User.findById(req.user.id);
@@ -34,8 +31,8 @@ router.post('/farms', auth, async (req, res) => {
             });
         }
 
-        // التحقق من البيانات
-        const { farmName, farmLocation, farmSize, mainCrops } = req.body;
+        const { farmName, farmLocation, farmLocationText, farmSize, mainCrops } = req.body;
+
         if (!farmName || !farmLocation || !farmSize || !mainCrops) {
             return res.status(400).json({
                 success: false,
@@ -43,36 +40,37 @@ router.post('/farms', auth, async (req, res) => {
             });
         }
 
-        // إضافة المزرعة الجديدة
+        const newFarm = {
+            farmName,
+            farmLocation,
+            farmLocationText: farmLocationText || '',
+            farmSize: parseFloat(farmSize),
+            mainCrops: Array.isArray(mainCrops) ? mainCrops : mainCrops.split(',').map(crop => crop.trim()),
+            createdAt: new Date()
+        };
+
         if (!farmer.farms) {
             farmer.farms = [];
         }
+        farmer.farms.push(newFarm);
 
-        farmer.farms.push({
-            farmName,
-            farmLocation,
-            farmSize: parseFloat(farmSize),
-            mainCrops: Array.isArray(mainCrops) ? mainCrops : [mainCrops]
-        });
-
-        await farmer.save();
+        await farmer.save({ validateModifiedOnly: true });
 
         res.status(201).json({
             success: true,
             message: 'Farm added successfully',
-            data: farmer.farms[farmer.farms.length - 1]
+            data: newFarm
         });
     } catch (error) {
-        console.error('Error adding new farm:', error);
+        console.error('Error adding farm:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error',
+            message: 'Error adding farm',
             error: error.message
         });
     }
 });
 
-// مسار رفع الصور
 router.post('/upload-image', auth, upload.single('profileImage'), async (req, res) => {
     try {
         if (!req.file) {
@@ -84,7 +82,6 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
 
         const imageUrl = `/uploads/profiles/${req.file.filename}`;
         
-        // تحديث صورة البروفايل في قاعدة البيانات
         const farmer = await User.findByIdAndUpdate(req.user.id, {
             profileImage: imageUrl
         }, { new: true });

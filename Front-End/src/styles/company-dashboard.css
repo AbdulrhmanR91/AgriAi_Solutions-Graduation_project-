@@ -1,0 +1,298 @@
+/* Company Dashboard Styles - Import Navigation Styles */
+@import url('./company-bottom-nav.css');
+
+/* Modern Company Dashboard Styles */
+
+/* Glass morphism effects */
+.company-glass-effect {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.1);
+}
+
+/* Company specific gradient backgrounds */
+.company-gradient-bg {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+/* Enhanced Company stat cards */
+.company-stat-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.95));
+  backdrop-filter: blur(15px);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 
+    0 10px 35px rgba(34, 197, 94, 0.12),
+    0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 2px solid rgba(34, 197, 94, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  transform-style: preserve-3d;
+}
+
+.company-stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 25px 50px rgba(34, 197, 94, 0.2),
+    0 10px 25px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(250, 252, 251, 0.98));
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+.company-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(34, 197, 94, 0.15), 
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.company-stat-card:hover::before {
+  left: 100%;
+}
+
+.company-stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #22c55e, #16a34a, #15803d);
+  border-radius: 24px 24px 0 0;
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.company-stat-card:hover::after {
+  transform: scaleX(1);
+}
+
+.company-stat-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.15), 
+    rgba(16, 185, 129, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.1);
+}
+
+.company-stat-card:hover .company-stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 0.2), 
+    rgba(16, 185, 129, 0.15));
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+}
+
+.company-stat-icon img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.2));
+}
+
+/* Company action buttons */
+.company-action-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.company-action-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.company-action-button:hover::before {
+  left: 100%;
+}
+
+.company-action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+}
+
+/* Floating animations */
+@keyframes companyFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  33% {
+    transform: translateY(-10px);
+  }
+  66% {
+    transform: translateY(-5px);
+  }
+}
+
+.company-floating-particle {
+  animation: companyFloat 6s ease-in-out infinite;
+}
+
+.company-floating-particle:nth-child(2) {
+  animation-delay: 2s;
+}
+
+.company-floating-particle:nth-child(3) {
+  animation-delay: 4s;
+}
+
+/* Company gradient text */
+.company-gradient-text {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: companyGradientShift 3s ease-in-out infinite alternate;
+}
+
+@keyframes companyGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Company slide animations */
+.company-slide-up {
+  animation: companySlideUp 0.8s ease-out forwards;
+}
+
+.company-slide-up-delay-1 {
+  animation: companySlideUp 0.8s ease-out forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.company-slide-up-delay-2 {
+  animation: companySlideUp 0.8s ease-out forwards;
+  animation-delay: 0.4s;
+  opacity: 0;
+}
+
+.company-slide-up-delay-3 {
+  animation: companySlideUp 0.8s ease-out forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
+}
+
+@keyframes companySlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Company responsive design */
+@media (max-width: 480px) {
+  .company-stat-card {
+    padding: 16px;
+  }
+  
+  .company-stat-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .company-stat-icon img {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 360px) {
+  .company-stat-card {
+    padding: 12px;
+  }
+  
+  .company-stat-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
+  }
+  
+  .company-stat-icon img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Company pulse effect for important elements */
+.company-pulse {
+  animation: companyPulse 2s infinite;
+}
+
+@keyframes companyPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+/* Company button hover effects */
+.company-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.company-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+}
+
+.company-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Company text shadow effects */
+.company-text-shadow {
+  text-shadow: 0 2px 4px rgba(34, 197, 94, 0.1);
+}
+
+.company-text-glow {
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}

@@ -1,30 +1,32 @@
 export const saveAnalysisResult = (result) => {
   try {
-    const savedResults = JSON.parse(localStorage.getItem('plantAnalysis') || '[]');
+    // Get existing results
+    let savedResults = [];
+    const existing = localStorage.getItem('plantAnalysisFarmer');
+    if (existing) {
+      savedResults = JSON.parse(existing);
+    }
     
-    const newResult = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      imageBase64: result.imageBase64,
-      prediction: result.prediction,
-      condition: result.condition,
-      severity: result.severity,
-      treatment: result.treatment
-    };
-
-    savedResults.unshift(newResult); // Add to beginning of array
-    localStorage.setItem('plantAnalysis', JSON.stringify(savedResults));
+    // Add new result to the beginning of the array
+    savedResults.unshift(result);
+    
+    // Save the updated array back to localStorage
+    localStorage.setItem('plantAnalysisFarmer', JSON.stringify(savedResults));
+    
     return true;
   } catch (error) {
-    console.error('Error saving analysis:', error);
+    console.error('Error saving analysis result:', error);
     return false;
   }
 };
 
-export const getSavedAnalyses = () => {
+// Function to get saved analysis results
+export const getSavedAnalysisResults = () => {
   try {
-    return JSON.parse(localStorage.getItem('plantAnalysis') || '[]');
-  } catch {
+    const saved = localStorage.getItem('plantAnalysisFarmer');
+    return saved ? JSON.parse(saved) : [];
+  } catch (error) {
+    console.error('Error retrieving saved analyses:', error);
     return [];
   }
 };

@@ -1,207 +1,201 @@
 /* eslint-env node */
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
-const userSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'الاسم مطلوب'],
-        trim: true,
-        minlength: [3, 'الاسم يجب أن يكون على الأقل 3 أحرف']
-    },
-    email: {
-        type: String,
-        required: [true, 'البريد الإلكتروني مطلوب'],
-        unique: true,
-        trim: true,
-        lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'البريد الإلكتروني غير صالح']
-    },
-    password: {
-        type: String,
-        required: [true, 'كلمة المرور مطلوبة'],
-        minlength: [6, 'كلمة المرور يجب أن تكون على الأقل 6 أحرف']
-    },
-    phone: {
-        type: String,
-        required: [true, 'رقم الهاتف مطلوب'],
-        match: [/^\+?[0-9]{10,14}$/, 'رقم الهاتف غير صالح']
-    },
-    userType: {
-        type: String,
-        required: [true, 'نوع المستخدم مطلوب'],
-        enum: {
-            values: ['farmer', 'expert', 'company'],
-            message: 'نوع المستخدم غير صالح'
+const UserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'Please add a name']
+  },
+  email: {
+    type: String,
+    required: [true, 'Please add an email'],
+    unique: true,
+    match: [
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      'Please add a valid email'
+    ]
+  },
+  phone: {
+    type: String,
+    required: [true, 'Please add a phone number'],
+    validate: {
+      validator: function(v) {
+        // Only validate phone on user creation or when phone is modified
+        if (this.isNew || this.isModified('phone')) {
+          const cleanPhone = v.replace(/^\+?20/, '');
+          return /^01[0125][0-9]{8}$/.test(cleanPhone);
         }
-    },
-    // حقول إضافية حسب نوع المستخدم
-    // للمزارع
-    farmDetails: {
-        farmName: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'farmer'; 
-            }, 'اسم المزرعة مطلوب للمزارع'],
-            trim: true,
-            minlength: [2, 'اسم المزرعة يجب أن يكون على الأقل حرفين']
-        },
-        farmSize: {
-            type: Number,
-            required: [function() { 
-                return this.userType === 'farmer'; 
-            }, 'حجم المزرعة مطلوب للمزارع'],
-            min: [0, 'حجم المزرعة يجب أن يكون أكبر من أو يساوي صفر']
-        },
-        mainCrops: {
-            type: [String],
-            validate: {
-                validator: function(crops) {
-                    if (this.userType !== 'farmer') return true;
-                    return Array.isArray(crops) && crops.length > 0 && 
-                           crops.every(crop => crop && crop.trim().length > 0);
-                },
-                message: 'يجب إضافة محصول واحد على الأقل'
-            }
-        },
-        farmLocation: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'farmer'; 
-            }, 'موقع المزرعة مطلوب للمزارع'],
-            trim: true
-        }
-    },
-    // دعم المزارع المتعددة
-    farms: [{
-        farmName: {
-            type: String,
-            required: [true, 'اسم المزرعة مطلوب'],
-            trim: true,
-            minlength: [2, 'اسم المزرعة يجب أن يكون على الأقل حرفين']
-        },
-        farmSize: {
-            type: Number,
-            required: [true, 'حجم المزرعة مطلوب'],
-            min: [0, 'حجم المزرعة يجب أن يكون أكبر من أو يساوي صفر']
-        },
-        mainCrops: {
-            type: [String],
-            validate: {
-                validator: function(crops) {
-                    return Array.isArray(crops) && crops.length > 0 && 
-                           crops.every(crop => crop && crop.trim().length > 0);
-                },
-                message: 'يجب إضافة محصول واحد على الأقل'
-            }
-        },
-        farmLocation: {
-            type: String,
-            required: [true, 'موقع المزرعة مطلوب'],
-            trim: true
-        }
-    }],
-    // للخبير
-    expertDetails: {
-        _id: false,
-        expertAt: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'expert'; 
-            }, 'التخصص مطلوب للخبير']
-        },
-        university: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'expert'; 
-            }, 'الجامعة مطلوبة للخبير']
-        },
-        college: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'expert'; 
-            }, 'الكلية مطلوبة للخبير']
-        },
-        services: {
-            type: [String],
-            validate: {
-                validator: function(services) {
-                    if (this.userType !== 'expert') return true;
-                    return Array.isArray(services) && services.length > 0 && 
-                           services.every(service => service && service.length >= 3);
-                },
-                message: 'يجب إضافة خدمة واحدة على الأقل للخبير، وكل خدمة يجب أن تكون على الأقل 3 أحرف'
-            }
-        },
-        verified: {
-            type: Boolean,
-            default: false
-        }
-    },
-    // للشركة
-    companyDetails: {
-        companyName: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'company'; 
-            }, 'اسم الشركة مطلوب']
-        },
-        businessAddress: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'company'; 
-            }, 'عنوان الشركة مطلوب']
-        },
-       
-        tradeLicenseNumber: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'company'; 
-            }, 'رقم الرخصة التجارية مطلوب']
-        },
-        taxRegistrationNumber: {
-            type: String,
-            required: [function() { 
-                return this.userType === 'company'; 
-            }, 'رقم التسجيل الضريبي مطلوب']
-        }
-    },
-    profileImage: {
-        type: String,
-        default: ''
+        return true;
+      },
+      message: 'Please add a valid Egyptian phone number'
     }
-}, {
-    timestamps: true
+  },
+  password: {
+    type: String,
+    required: [true, 'Please add a password'],
+    minlength: 6,
+    select: false
+  },
+  userType: {
+    type: String,
+    enum: ['farmer', 'expert', 'company'],
+    required: [true, 'Please select a user type']
+  },
+  blocked: {
+    type: Boolean,
+    default: false
+  },
+  profileImage: {
+    type: String,
+    default: ''
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  farms: [{
+    farmName: {
+      type: String,
+      required: true
+    },
+    farmLocation: {
+      type: String,
+      required: true
+    },
+    farmLocationText: {
+      type: String,
+      default: ''
+    },
+    farmSize: {
+      type: Number,
+      required: true
+    },
+    mainCrops: {
+      type: [String],
+      required: true,
+      default: []
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  farmDetails: {
+    farmName: {
+      type: String,
+      default: ''
+    },
+    farmLocation: {
+      type: String,
+      default: ''
+    },
+    farmSize: {
+      type: Number,
+      default: 0
+    },
+    crops: {
+      type: [String],
+      default: []
+    }
+  },
+  expertDetails: {
+    expertAt: {
+      type: String,
+      default: ''
+    },
+    university: {
+      type: String,
+      default: ''
+    },
+    college: {
+      type: String,
+      default: ''
+    },
+    services: {
+      type: [String],
+      default: []
+    },
+    bio: {
+      type: String,
+      default: ''
+    },
+    experience: {
+      type: Number,
+      default: 0
+    },
+    specialization: {
+      type: String,
+      default: ''
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    totalReviews: {
+      type: Number,
+      default: 0
+    },
+    ratingsCount: {
+      type: Number,
+      default: 0
+    }
+  },
+  companyDetails: {                  
+    companyName: {
+      type: String,
+      default: ''
+    },
+    businessAddress: {
+      type: String,
+      default: ''
+    },
+    tradeLicenseNumber: {
+      type: String,
+      default: ''
+    },
+    taxRegistrationNumber: {
+      type: String,
+      default: ''
+    },
+    location: {                     
+      lat: {
+        type: Number,
+        default: null
+      },
+      lng: {
+        type: Number,
+        default: null
+      }
+    }
+  }
 });
 
-// تشفير كلمة المرور قبل الحفظ
-userSchema.pre('save', async function(next) {
-    try {
-        if (this.isModified('password')) {
-            const salt = await bcrypt.genSalt(10);
-            this.password = await bcrypt.hash(this.password, salt);
-        }
-        next();
-    } catch (error) {
-        next(error);
-    }
+// Hash password before save
+UserSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+  
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-// دالة للتحقق من كلمة المرور
-userSchema.methods.comparePassword = async function(candidatePassword) {
-    try {
-        return await bcrypt.compare(candidatePassword, this.password);
-    } catch (error) {
-        throw new Error('خطأ في التحقق من كلمة المرور');
-    }
+// Sign JWT and return
+UserSchema.methods.getSignedJwtToken = function() {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: '30d'
+  });
 };
 
-// دالة لإخفاء البيانات الحساسة
-userSchema.methods.toJSON = function() {
-    const user = this.toObject();
-    delete user.password;
-    return user;
+// Match user entered password to hashed password in database
+UserSchema.methods.matchPassword = async function(enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-export default User; 
+const User = mongoose.model('User', UserSchema);
+
+export default User;

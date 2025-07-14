@@ -1,2 +1,3 @@
 
-export const BASE_URL = 'https://dark-gennifer-abdulrhman-5d081501.koyeb.app';
+// export const BASE_URL = 'http://localhost:5000/';
+export const BASE_URL = 'http://localhost:5000/'; // Replace with your actual base URL

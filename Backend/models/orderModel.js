@@ -73,20 +73,16 @@ const orderSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// إضافة فهارس للبحث السريع (تعديل الفهارس)
 orderSchema.index({ buyer: 1, createdAt: -1 });
 orderSchema.index({ seller: 1, createdAt: -1 });
 orderSchema.index({ product: 1 });
 orderSchema.index({ status: 1 });
 
-// دالة للتحقق من صحة الطلب
 orderSchema.methods.validateOrder = async function() {
-    // التحقق من أن المشتري ليس هو البائع
     if (this.buyer.toString() === this.seller.toString()) {
         throw new Error('لا يمكنك شراء منتجاتك');
     }
 
-    // التحقق من وجود المنتج والكمية المتوفرة
     const Product = mongoose.model('Product');
     const product = await Product.findById(this.product);
     
@@ -98,19 +94,16 @@ orderSchema.methods.validateOrder = async function() {
         throw new Error('الكمية المطلوبة غير متوفرة');
     }
 
-    // التحقق من صحة السعر الإجمالي
     const expectedPrice = product.price * this.quantity;
     if (Math.abs(expectedPrice - this.totalPrice) > 0.01) {
         throw new Error('السعر الإجمالي غير صحيح');
     }
 
-    // التحقق من تفاصيل الشحن
     const { fullName, phone, address, city } = this.shippingDetails;
     if (!fullName?.trim() || !phone?.trim() || !address?.trim() || !city?.trim()) {
         throw new Error('جميع تفاصيل الشحن مطلوبة');
     }
 
-    // التحقق من صحة رقم الهاتف
     const phoneRegex = /^01[0125][0-9]{8}$/;
     if (!phoneRegex.test(phone)) {
         throw new Error('رقم الهاتف غير صحيح');
@@ -119,7 +112,6 @@ orderSchema.methods.validateOrder = async function() {
     return true;
 };
 
-// التحقق قبل الحفظ
 orderSchema.pre('save', async function(next) {
     try {
         if (this.isNew) {

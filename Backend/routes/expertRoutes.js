@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import auth from '../middleware/auth.js';
 import User from '../models/User.js';
+import Rating from '../models/Rating.js';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
 const router = Router();
 
-// إعداد multer لتحميل الصور
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
         const uploadDir = './uploads/profiles';
@@ -37,7 +37,6 @@ const upload = multer({
     }
 });
 
-// الحصول على بيانات الخبير من جدول users
 router.get('/profile', auth, async (req, res) => {
     try {
         const user = await User.findOne({
@@ -52,7 +51,6 @@ router.get('/profile', auth, async (req, res) => {
             });
         }
 
-        // تنسيق البيانات قبل إرسالها
         const formattedExpert = {
             name: user.name,
             email: user.email,
@@ -81,35 +79,18 @@ router.get('/profile', auth, async (req, res) => {
     }
 });
 
-// تحديث بيانات الخبير في جدول users
 router.put('/profile', auth, async (req, res) => {
     try {
         const updates = req.body;
         console.log('Received updates:', updates);
         
-        // تحديث البيانات في جدول users
         const updatedUser = await User.findOneAndUpdate(
             { 
                 _id: req.user.id,
                 userType: 'expert'
             },
-            { 
-                $set: {
-                    // تحديث البيانات الأساسية
-                    email: updates.email,
-                    phone: updates.phone,
-                    location: updates.location,
-                    // تحديث بيانات الخبير
-                    'expertDetails.expertAt': updates.expertAt || updates.expertDetails?.expertAt,
-                    'expertDetails.university': updates.university || updates.expertDetails?.university,
-                    'expertDetails.college': updates.college || updates.expertDetails?.college,
-                    'expertDetails.services': updates.services || updates.expertDetails?.services
-                }
-            },
-            { 
-                new: true, 
-                runValidators: true 
-            }
+            updates,
+            { new: true, runValidators: true }
         ).select('-password');
 
         if (!updatedUser) {
@@ -119,7 +100,6 @@ router.put('/profile', auth, async (req, res) => {
             });
         }
 
-        // تنسيق البيانات قبل إرسالها
         const formattedExpert = {
             name: updatedUser.name,
             email: updatedUser.email,
@@ -148,7 +128,6 @@ router.put('/profile', auth, async (req, res) => {
     }
 });
 
-// جلب قائمة الخبراء المتاحين
 router.get('/available', auth, async (req, res) => {
     try {
         const experts = await User.find({ userType: 'expert' })
@@ -156,7 +135,7 @@ router.get('/available', auth, async (req, res) => {
             .sort({ createdAt: -1 });
 
         const formattedExperts = experts.map(expert => ({
-            _id: expert._id, // Change from id to _id
+            _id: expert._id, 
             name: expert.name,
             profileImage: expert.profileImage,
             expertDetails: expert.expertDetails,
@@ -167,7 +146,7 @@ router.get('/available', auth, async (req, res) => {
             success: true,
             data: formattedExperts
         });
-    } catch  {
+    } catch (error) {
         res.status(500).json({
             success: false,
             message: 'Failed to get experts'
@@ -175,7 +154,6 @@ router.get('/available', auth, async (req, res) => {
     }
 });
 
-// البحث عن خبراء
 router.get('/search', auth, async (req, res) => {
     try {
         const { query } = req.query;
@@ -189,14 +167,13 @@ router.get('/search', auth, async (req, res) => {
             ]
         })
         .select('name profileImage expertDetails phone')
-        .sort({ createdAt: -1 });
+        .limit(10);
 
         const formattedExperts = experts.map(expert => ({
-            id: expert._id,
+            _id: expert._id, 
             name: expert.name,
             profileImage: expert.profileImage,
-            specialization: expert.expertDetails?.expertAt || '',
-            university: expert.expertDetails?.university || '',
+            expertDetails: expert.expertDetails,
             phone: expert.phone
         }));
 
@@ -205,19 +182,15 @@ router.get('/search', auth, async (req, res) => {
             data: formattedExperts
         });
     } catch (error) {
-        console.error('Error searching experts:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to search experts'
+            message: 'Search failed'
         });
     }
 });
 
-// إضافة مسار تحميل الصورة
-router.post('/upload-image', auth, upload.single('profileImage'), async (req, res) => {
+router.post('/profile/image', auth, upload.single('profileImage'), async (req, res) => {
     try {
-        console.log('Upload request received:', { file: req.file }); // Debug log
-
         if (!req.file) {
             return res.status(400).json({
                 success: false,
@@ -225,41 +198,29 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
             });
         }
 
-        const uploadDir = './uploads/profiles';
-        if(!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
+        const imageUrl = `/uploads/profiles/${req.file.filename}`;
+        
+        const updatedUser = await User.findOneAndUpdate(
+            { 
+                _id: req.user.id,
+                userType: 'expert'
+            },
+            { profileImage: imageUrl },
+            { new: true }
+        ).select('-password');
 
-        const user = await User.findById(req.user.id);
-        if (!user) {
+        if (!updatedUser) {
             return res.status(404).json({
                 success: false,
                 message: 'Expert not found'
             });
         }
 
-        // Delete old profile image if exists
-        if (user.profileImage) {
-            try {
-                const oldImagePath = path.join(process.cwd(), user.profileImage);
-                if (fs.existsSync(oldImagePath)) {
-                    fs.unlinkSync(oldImagePath);
-                }
-            } catch (err) {
-                console.error('Error deleting old image:', err);
-            }
-        }
-
-        // Update user profile with new image path
-        const imagePath = `/uploads/profiles/${req.file.filename}`;
-        user.profileImage = imagePath;
-        await user.save();
-
-        console.log('Profile image updated:', imagePath); // Debug log
-
         res.json({
             success: true,
-            imageUrl: imagePath,
+            data: {
+                profileImage: updatedUser.profileImage
+            },
             message: 'Profile image updated successfully'
         });
     } catch (error) {
@@ -267,6 +228,88 @@ router.post('/upload-image', auth, upload.single('profileImage'), async (req, re
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to upload profile image'
+        });
+    }
+});
+
+// Get expert reviews by ID for farmers to view (public endpoint)
+router.get('/:expertId/public-reviews', async (req, res) => {
+    try {
+        const { expertId } = req.params;
+        
+        // Verify expert exists
+        const expert = await User.findOne({
+            _id: expertId,
+            userType: 'expert'
+        }).select('name expertDetails');
+        
+        if (!expert) {
+            return res.status(404).json({
+                success: false,
+                message: 'Expert not found'
+            });
+        }
+        
+        // Get ratings with farmer details
+        const ratings = await Rating.find({ expert: expertId })
+            .populate('farmer', 'name')
+            .sort({ createdAt: -1 })
+            .limit(20); // Limit to latest 20 reviews
+        
+        const reviews = ratings.map(rating => ({
+            _id: rating._id,
+            rating: rating.rating,
+            feedback: rating.feedback || '',
+            farmerName: rating.farmer?.name || 'Anonymous',
+            createdAt: rating.createdAt,
+            updatedAt: rating.updatedAt
+        }));
+        
+        return res.status(200).json({
+            success: true,
+            data: reviews,
+            expertInfo: {
+                name: expert.name,
+                averageRating: expert.expertDetails?.averageRating || 0,
+                totalReviews: expert.expertDetails?.totalReviews || 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error fetching expert public reviews:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch expert reviews'
+        });
+    }
+});
+
+// Get all farmers for visit management (expert only)
+router.get('/farmers', auth, async (req, res) => {
+    try {
+        // Verify user is an expert
+        const user = await User.findById(req.user.id);
+        if (!user || user.userType !== 'expert') {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Experts only.'
+            });
+        }
+
+        const farmers = await User.find({ userType: 'farmer' })
+            .select('name email phone profileImage')
+            .lean();
+
+        res.json({
+            success: true,
+            data: farmers
+        });
+    } catch (error) {
+        console.error('Error fetching farmers for expert:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
         });
     }
 });

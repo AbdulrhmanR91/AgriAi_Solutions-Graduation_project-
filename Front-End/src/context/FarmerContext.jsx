@@ -1,17 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { getFarmerProfile } from '../../utils/apiService';
+import { createContext, useState, useEffect, useContext } from 'react';
+import { getFarmerProfile } from '../utils/apiService';
 import PropTypes from 'prop-types';
 
 const FarmerContext = createContext();
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const useFarmer = () => {
-    const context = useContext(FarmerContext);
-    if (!context) {
-        throw new Error('useFarmer must be used within a FarmerProvider');
-    }
-    return context;
-};
 
 const FarmerProvider = ({ children }) => {
     const [farmer, setFarmer] = useState(null);
@@ -47,4 +38,16 @@ FarmerProvider.propTypes = {
     children: PropTypes.node.isRequired
 };
 
-export default FarmerProvider; 
+// Custom hook
+export const useFarmer = () => {
+    const context = useContext(FarmerContext);
+    
+    if (!context) {
+        throw new Error('useFarmer must be used within a FarmerProvider');
+    }
+    
+    return context;
+};
+
+export { FarmerContext };
+export default FarmerProvider;

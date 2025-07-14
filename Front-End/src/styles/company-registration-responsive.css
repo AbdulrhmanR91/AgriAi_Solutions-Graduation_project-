@@ -1,0 +1,252 @@
+/* Company Registration Responsive Styles */
+
+/* Mobile First Approach */
+@media (max-width: 480px) {
+  .company-registration-form {
+    padding: 0.75rem;
+  }
+  
+  .company-form-header {
+    padding: 1rem;
+  }
+  
+  .company-form-logo {
+    width: 80px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .company-form-title {
+    font-size: 1.125rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .company-form-subtitle {
+    font-size: 0.875rem;
+  }
+  
+  .company-form-section {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .company-form-section-title {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .company-form-input {
+    padding: 0.625rem 0.75rem;
+    padding-left: 2.25rem;
+    font-size: 0.875rem;
+  }
+  
+  .company-form-icon {
+    width: 16px;
+    height: 16px;
+    left: 0.75rem;
+  }
+  
+  .company-form-phone-select {
+    width: 70px;
+    padding-left: 2rem;
+    font-size: 0.75rem;
+  }
+  
+  .company-form-phone-input {
+    padding-left: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .company-form-textarea {
+    padding: 0.625rem 0.75rem;
+    padding-left: 2.25rem;
+    font-size: 0.875rem;
+    min-height: 80px;
+  }
+  
+  .company-form-checkbox-container {
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .company-form-checkbox {
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+  }
+  
+  .company-form-checkbox-label {
+    font-size: 0.75rem;
+    line-height: 1.25;
+  }
+  
+  .company-form-submit-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .company-form-error {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  
+  .company-form-helper-text {
+    font-size: 0.625rem;
+    margin-top: 0.25rem;
+  }
+}
+
+/* Small tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+  .company-registration-form {
+    padding: 1rem;
+  }
+  
+  .company-form-header {
+    padding: 1.25rem;
+  }
+  
+  .company-form-logo {
+    width: 100px;
+  }
+  
+  .company-form-section {
+    padding: 1rem;
+  }
+  
+  .company-form-input {
+    padding: 0.75rem 1rem;
+    padding-left: 2.75rem;
+  }
+  
+  .company-form-phone-select {
+    width: 80px;
+    padding-left: 2.25rem;
+  }
+}
+
+/* Large tablets and small desktops */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .company-form-container {
+    max-width: 90%;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (pointer: coarse) {
+  .company-form-input,
+  .company-form-phone-select,
+  .company-form-textarea,
+  .company-form-submit-btn {
+    min-height: 44px; /* Apple's recommended touch target size */
+  }
+  
+  .company-form-checkbox {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Reduce animations on low-end devices */
+@media (prefers-reduced-motion: reduce) {
+  .company-form-input,
+  .company-form-submit-btn {
+    transition: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .company-form-section {
+    border: 2px solid #000;
+  }
+  
+  .company-form-input:focus {
+    border-width: 3px;
+    outline: 2px solid #000;
+  }
+}
+
+/* Dark mode support for mobile */
+@media (prefers-color-scheme: dark) and (max-width: 768px) {
+  .company-form-section {
+    background-color: rgba(31, 41, 55, 0.05);
+  }
+  
+  .company-form-input {
+    background-color: rgba(17, 24, 39, 0.8);
+    color: white;
+    border-color: rgba(75, 85, 99, 0.5);
+  }
+  
+  .company-form-input::placeholder {
+    color: rgba(156, 163, 175, 0.8);
+  }
+}
+
+/* Arabic RTL Support */
+[dir="rtl"] .company-form-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .company-form-input {
+  text-align: right;
+  padding-left: 1rem;
+  padding-right: 2.75rem;
+}
+
+[dir="rtl"] .company-form-icon {
+  left: auto;
+  right: 0.75rem;
+}
+
+[dir="rtl"] .company-form-phone-select {
+  border-radius: 0 0.5rem 0.5rem 0;
+  border-left: 2px solid;
+  border-right: 0;
+}
+
+[dir="rtl"] .company-form-phone-input {
+  border-radius: 0.5rem 0 0 0.5rem;
+  border-right: 2px solid;
+  border-left: 0;
+}
+
+[dir="rtl"] .company-form-checkbox-container {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .company-form-back-button {
+  flex-direction: row-reverse;
+}
+
+/* Arabic Font Support */
+[lang="ar"] .company-form-container {
+  font-family: 'Tajawal', 'Cairo', 'Amiri', sans-serif;
+}
+
+[lang="ar"] .company-form-title {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+[lang="ar"] .company-form-input,
+[lang="ar"] .company-form-textarea {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Enhanced mobile support for Arabic */
+@media (max-width: 480px) {
+  [dir="rtl"] .company-form-input {
+    padding-right: 2.25rem;
+    padding-left: 0.75rem;
+  }
+  
+  [dir="rtl"] .company-form-icon {
+    right: 0.5rem;
+  }
+  
+  [lang="ar"] .company-form-input {
+    font-size: 0.9rem;
+  }
+}

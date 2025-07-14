@@ -1,0 +1,5 @@
+/*
+  Content-Security-Policy: default-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://unpkg.com https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://abdulrhmanr91-agriai.hf.space http://localhost:5000 localhost:* blob:; font-src 'self' data: https://fonts.gstatic.com;
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin

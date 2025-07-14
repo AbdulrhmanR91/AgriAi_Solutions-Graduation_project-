@@ -1,7 +1,6 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-// الحصول على بيانات المزارع
 export const getFarmerProfile = async (req, res) => {
     try {
         console.log('Getting farmer profile for user:', req.user.id);
@@ -18,11 +17,27 @@ export const getFarmerProfile = async (req, res) => {
             });
         }
 
-        console.log('Found farmer:', farmer);
-        
+        const transformedData = {
+            ...farmer,
+            contact: {
+                email: farmer.email,
+                phone: farmer.phone,
+                location: farmer.location || ''
+            },
+            farms: farmer.farms?.map(farm => ({
+                _id: farm._id,
+                farmName: farm.farmName,
+                farmLocation: farm.farmLocation,
+                farmLocationText: farm.farmLocationText || '',
+                farmSize: farm.farmSize,
+                mainCrops: farm.mainCrops || [],
+                createdAt: farm.createdAt
+            })) || []
+        };
+
         res.json({
             success: true,
-            data: farmer
+            data: transformedData
         });
     } catch (error) {
         console.error('Error in getFarmerProfile:', error);
@@ -34,13 +49,11 @@ export const getFarmerProfile = async (req, res) => {
     }
 };
 
-// تحديث بيانات المزارع
 export const updateFarmerProfile = async (req, res) => {
     try {
         const updates = req.body;
         console.log('Updating farmer profile with data:', updates);
 
-        // التحقق من وجود المزارع
         const farmer = await User.findById(req.user.id);
         if (!farmer) {
             return res.status(404).json({
@@ -49,7 +62,6 @@ export const updateFarmerProfile = async (req, res) => {
             });
         }
 
-        // تحديث البيانات
         if (updates.farmDetails) {
             farmer.farmDetails = {
                 ...farmer.farmDetails,
@@ -63,7 +75,6 @@ export const updateFarmerProfile = async (req, res) => {
 
         await farmer.save();
 
-        // إرجاع البيانات المحدثة بدون كلمة المرور
         const updatedFarmer = await User.findById(req.user.id)
             .select('-password')
             .lean();
@@ -81,4 +92,24 @@ export const updateFarmerProfile = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
+
+export const getAllFarmers = async (req, res) => {
+    try {
+        const farmers = await User.find({ userType: 'farmer' })
+            .select('name email phone profileImage')
+            .lean();
+
+        res.json({
+            success: true,
+            data: farmers
+        });
+    } catch (error) {
+        console.error('Error in getAllFarmers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};

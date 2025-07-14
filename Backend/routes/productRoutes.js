@@ -7,13 +7,11 @@ import Product from '../models/productModel.js';
 
 const router = express.Router();
 
-// إنشاء مجلد الصور إذا لم يكن موجوداً
 const uploadDir = './uploads/products';
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// تكوين multer للتعامل مع الصور
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDir);
@@ -35,11 +33,10 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB max
+        fileSize: 5 * 1024 * 1024 
     }
 });
 
-// الحصول على كل المنتجات
 router.get('/', async (req, res) => {
     try {
         const products = await Product.find()
@@ -59,7 +56,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// إضافة منتج جديد
 router.post('/', auth, upload.single('image'), async (req, res) => {
     try {
         const { name, type, price, quantity, description, sellerType } = req.body;
@@ -104,7 +100,6 @@ console.log('File:', req.file);
     }
 });
 
-// تحديث منتج
 router.put('/:id', auth, upload.single('image'), async (req, res) => {
     try {
         console.log('Update product request received:', {
@@ -142,7 +137,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
 
         if (req.file) {
             console.log('New image uploaded:', req.file.filename);
-            // حذف الصورة القديمة إذا كانت موجودة
             if (product.image) {
                 const oldImagePath = path.join(process.cwd(), product.image);
                 if (fs.existsSync(oldImagePath)) {
@@ -175,8 +169,7 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
     }
 });
 
-// حذف منتج
-// حذف منتج
+
 router.delete('/:id', auth, async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -196,7 +189,6 @@ router.delete('/:id', auth, async (req, res) => {
             });
         }
 
-        // Corrected: Delete the product directly from the database
         await Product.deleteOne({ _id: req.params.id });
 
         res.json({
@@ -213,7 +205,6 @@ router.delete('/:id', auth, async (req, res) => {
 });
 
 
-// حفظ منتج في قائمة منتجاتي
 router.post('/my-products', auth, async (req, res) => {
     try {
         const { productId } = req.body;
@@ -226,7 +217,6 @@ router.post('/my-products', auth, async (req, res) => {
             });
         }
 
-        // التحقق من أن المستخدم هو مالك المنتج
         if (product.seller.toString() !== req.user.id) {
             return res.status(403).json({
                 success: false,
@@ -234,7 +224,6 @@ router.post('/my-products', auth, async (req, res) => {
             });
         }
 
-        // تحديث المنتج ليظهر في قائمة منتجاتي
         product.isInMyProducts = true;
         await product.save();
 
@@ -250,7 +239,6 @@ router.post('/my-products', auth, async (req, res) => {
     }
 });
 
-// الحصول على منتجات المستخدم
 router.get('/my-products', auth, async (req, res) => {
     try {
         const products = await Product.find({ seller: req.user._id })
@@ -270,7 +258,6 @@ router.get('/my-products', auth, async (req, res) => {
     }
 });
 
-// Get product by ID
 router.get('/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)

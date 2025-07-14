@@ -1,35 +1,32 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/userModel.js';
+import User from '../models/User.js';
 
-export const authenticateToken = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
-
+        const token = req.headers.authorization?.split(' ')[1];
+        
         if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'No token provided'
-            });
+            return res.status(401).json({ message: 'No token provided' });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-
+        const user = await User.findById(decoded.userId || decoded.id).select('-password');
+        
         if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: 'User not found'
-            });
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        // Check if user is blocked
+        if (user.blocked) {
+            return res.status(403).json({ message: 'Account has been blocked' });
         }
 
         req.user = user;
         next();
     } catch (error) {
-        console.error('Auth error:', error);
-        return res.status(401).json({
-            success: false,
-            message: 'Invalid token'
-        });
+        console.error('Auth middleware error:', error);
+        res.status(401).json({ message: 'Invalid token' });
     }
-}; 
+};
+
+export default authMiddleware;
